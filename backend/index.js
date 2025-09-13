@@ -18,6 +18,7 @@ import eventRouter from "./routes/event.routes.js";
 import analyticsRouter from "./routes/analytics.routes.js";
 import zatcaXmlInvoiceRouter from "./zatca/zatcaInvoiceXMLGenerate.js";
 import clientMediaRouter from "./routes/clientmedia.routes.js";
+import onboardClientRouter from "./routes/onboardclient.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,6 +45,7 @@ app.use("/api/v1/events", eventRouter);
 app.use("/api/v1/monthly-income", analyticsRouter);
 app.use("/api/v1/generateXMLInvoices", zatcaXmlInvoiceRouter);
 app.use("/api/v1/clientmedias", clientMediaRouter);
+app.use("/api/zatca/onboardClient", onboardClientRouter);
 
 const startServer = async () => {
   try {

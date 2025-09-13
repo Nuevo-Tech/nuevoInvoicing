@@ -254,6 +254,19 @@ export const InvoicePageList = () => {
             }}
           />
           <Table.Column
+            title="Invoice Status"
+            dataIndex="status"
+            key="status"
+            width={160}
+            render={(status) => {
+              let color = "default";
+              if (status === "Draft") color = "blue";
+              else if (status === "Validation Pass") color = "orange";
+              else if (status === "Submitted to ZATCA") color = "green";
+              return <TagField value={status} color={color} />;
+            }}
+          />
+          <Table.Column
             title="Actions"
             key="actions"
             fixed="right"

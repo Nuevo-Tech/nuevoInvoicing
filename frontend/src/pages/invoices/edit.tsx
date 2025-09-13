@@ -281,6 +281,7 @@ export const InvoicesPageEdit = () => {
                         wrap="wrap"
                         style={{padding: "32px", marginTop: "-75px"}}
                     >
+                        {/*
                         <Form.Item
                             label="Status"
                             name="status"
@@ -291,6 +292,24 @@ export const InvoicesPageEdit = () => {
                                 placeholder="Select Status"
                                 options={statusOptions}
                                 onChange={handleStatusChange}
+                            />
+                        </Form.Item>
+                        */}
+                        <Form.Item
+                            label="Invoice Status"
+                            name="status"
+                            initialValue={record?.status || "Draft"}
+                            rules={[{ required: true }]}
+                            style={{ flex: 1, minWidth: "250px" }}
+                        >
+                            <Select
+                                options={[
+                                    { value: "Draft", label: "Draft" },
+                                    { value: "Validation Pass", label: "Validation Pass" },
+                                    { value: "Submitted to ZATCA", label: "Submitted to ZATCA" }
+                                ]}
+                                placeholder="Select status"
+                                disabled
                             />
                         </Form.Item>
 

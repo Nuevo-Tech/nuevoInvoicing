@@ -64,6 +64,9 @@ import {useAuth0} from "@auth0/auth0-react";
 import {Login} from "./providers/auth-provider/login";
 import axios from "axios";
 import {BASE_URL_API_V1} from "./utils/urls";
+import AdminPage from "./pages/admin/index";
+import AdminDashboard from "./pages/admin/dashboard";
+import OnboardingClient from "./pages/admin/onboardingclient";
 
 const App: React.FC = () => {
     const {isLoading, user, logout, getIdTokenClaims} = useAuth0();
@@ -140,7 +143,6 @@ const App: React.FC = () => {
                                 },
                                 icon: <FileAddOutlined/>,
                             },
-
                             {
                                 name: "Appointments",
                                 icon: <FieldTimeOutlined/>,
@@ -168,6 +170,14 @@ const App: React.FC = () => {
                                     label: "Client Archives"
                                 },
                                 icon: <TeamOutlined/>,
+                            },
+                            {
+                                name: "Admin",
+                                list: "/admin",
+                                icon: <DashboardOutlined/>,
+                                meta: {
+                                    label: "Admin",
+                                },
                             },
                         ]}
                         notificationProvider={useNotificationProvider}
@@ -203,8 +213,10 @@ const App: React.FC = () => {
                                     </Authenticated>
                                 }
                             >
-                                <Route index element={<DashboardPage/>}/>
-                                <Route index element={<NavigateToResource/>}/>
+                                <Route path="/" element={<DashboardPage />} />
+                                <Route path="/admin" element={<AdminPage />} />
+                                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                                <Route path="/admin/onboardingclient" element={<OnboardingClient />} />
 
                                 <Route
                                     path="/accounts"
@@ -283,6 +295,8 @@ const App: React.FC = () => {
                                     <Route path="new" element={<ClientMediaPageCreate/>}/>
                                 </Route>
                                 <Route path="/clients/:id/edit" element={<ClientMediaPageEdit/>}/>
+
+                                <Route path="/admin" element={<AdminPage />} />
 
                                 <Route path="*" element={<ErrorComponent/>}/>
                             </Route>
