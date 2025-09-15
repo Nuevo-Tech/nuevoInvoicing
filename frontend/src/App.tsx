@@ -42,6 +42,7 @@ import {
     ClientMediaPageEdit,
 } from "@/pages/clientmedia";
 import {DashboardPage} from "./pages/dashboard";
+import {MyOrgProfilePageEdit} from "./pages/myorgprofile";
 import dataProvider from "@refinedev/simple-rest";
 import {authProvider} from "@/providers/auth-provider";
 import {ConfigProvider} from "@/providers/config-provider";
@@ -59,6 +60,7 @@ import {
     FileAddOutlined,
     AuditOutlined,
     DashboardOutlined, FieldTimeOutlined,
+    ProfileOutlined,
 } from "@ant-design/icons";
 import {useAuth0} from "@auth0/auth0-react";
 import {Login} from "./providers/auth-provider/login";
@@ -179,6 +181,15 @@ const App: React.FC = () => {
                                     label: "Admin",
                                 },
                             },
+                            {
+                                name: "myorgprofile",
+                                list: "/myorgprofile",
+                                edit: "/myorgprofile/:id/edit",
+                                meta: {
+                                    label: "My OrgProfile",
+                                },
+                                icon: <ProfileOutlined/>,
+                            },
                         ]}
                         notificationProvider={useNotificationProvider}
                         options={{
@@ -297,6 +308,12 @@ const App: React.FC = () => {
                                 <Route path="/clients/:id/edit" element={<ClientMediaPageEdit/>}/>
 
                                 <Route path="/admin" element={<AdminPage />} />
+
+                                <Route path="/myorgprofile">
+                                    <Route index element={<MyOrgProfilePageEdit/>}/>
+                                    <Route path=":id" element={<MyOrgProfilePageEdit/>}/>
+                                    <Route path=":id/edit" element={<MyOrgProfilePageEdit/>}/>
+                                </Route>
 
                                 <Route path="*" element={<ErrorComponent/>}/>
                             </Route>

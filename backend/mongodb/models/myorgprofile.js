@@ -1,26 +1,34 @@
 import mongoose from "mongoose";
 
-const AccountSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  account_name: { type: String, required: true },
-  owner_name: { type: String, required: false },
-  owner_email: { type: String, required: false },
-  logo: { type: String, required: false },
-  country: { type: String, required: false },
-  address: { type: String, required: false },
-  phone: { type: String, required: false },
-  createdDate: { type: Date, required: true, default: Date.now },
-  updatedDate: { type: Date, required: false },
-  clients: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
-  invoices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Invoice" }],
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  note: { type: String, required: false },
-});
+const MyOrgProfileSchema = new mongoose.Schema({
+        id:{type: String},
+            // partyIdentification
+        partyId: {type: String},                        // id
+        partySchemeID: {type: String, default: "CRN"},  // schemeID
 
-const accountModel = mongoose.model("Account", AccountSchema);
+        // postalAddress
+        streetName: {type: String},
+        buildingNumber: {type: String},
+        citySubdivisionName: {type: String},
+        cityName: {type: String},
+        postalZone: {type: String},
+        countryIdentificationCode: {type: String}, // country.identificationCode
 
-export default accountModel;
+        // partyTaxScheme
+        partyTaxSchemeCompanyID: {type: String},
+        partyTaxSchemeTaxSchemeId: {type: String}, // taxScheme.id
+
+        // partyLegalEntity
+        partyLegalEntityRegistrationName: {type: String},
+
+        // other fields
+        logo: {type: String, required: false},
+        email: {type: String, required: false},
+        phoneNumber: {type: String, required: false},
+    },
+    {timestamps: true}
+);
+
+const myOrgProfileModel = mongoose.model("MyOrgProfile", MyOrgProfileSchema);
+
+export default myOrgProfileModel;

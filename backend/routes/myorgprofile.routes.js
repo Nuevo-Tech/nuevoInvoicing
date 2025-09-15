@@ -1,19 +1,14 @@
 import express from "express";
 
 import {
-  createAccount,
-  deleteAccount,
-  getAllAccounts,
-  getAccountDetail,
-  updateAccount,
-} from "../controllers/account.controller.js";
+  getMyOrgProfileDetail,
+  updateMyOrgProfile,
+} from "../controllers/myorgprofile.controller.js";
 
 const router = express.Router();
 
-router.route("/").get(getAllAccounts);
-router.route("/:id").get(getAccountDetail);
-router.route("/").post(createAccount);
-router.route("/:id").patch(updateAccount);
-router.route("/:id").delete(deleteAccount);
+router.route("/").get(getMyOrgProfileDetail);
+router.route("/:id").get(getMyOrgProfileDetail);
+router.route("/").post(updateMyOrgProfile);
 
 export default router;

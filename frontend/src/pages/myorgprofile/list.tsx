@@ -1,5 +1,5 @@
 import {type HttpError, useNavigation} from "@refinedev/core";
-import {DeleteButton, Show,List,Edit, useForm} from "@refinedev/antd";
+import {DeleteButton, Show,List, useForm} from "@refinedev/antd";
 import {Card, Col, Divider, Flex, Form, Row, Typography} from "antd";
 import {
     BankOutlined,
@@ -24,6 +24,7 @@ export const MyOrgProfilePageEdit = () => {
     >({
         resource: "myorgprofile",
         redirect: false,
+        id:"1",
         meta: {
             populate: ["logo", "myorgprofile"],
         },

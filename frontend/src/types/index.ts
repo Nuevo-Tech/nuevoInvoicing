@@ -71,6 +71,24 @@ export type Service = {
   totalPrice: number;
 };
 
+export type MyOrgProfile = {
+  id: string;
+  partyId: string;
+  schemeId: string;
+  streetName: string;
+  buildingNumber: string;
+  citySubdivisionName: string;
+  cityName: string;
+  postalZone: string;
+  countryIdentificationCode: string;
+  partyTaxSchemeCompanyID: string;
+  partyTaxSchemeTaxSchemeId: string;
+  partyLegalEntityRegistrationName: string;
+  email: string;
+  phoneNumber: string;
+  logo: string;
+};
+
 export type User = {
   id: string;
   name: string;
