@@ -1,12 +1,11 @@
-import {useGo, useNavigation, useOne} from "@refinedev/core";
+import {useGo, useOne} from "@refinedev/core";
 import {useForm, useSelect} from "@refinedev/antd";
-import {Flex, Form, Input, Modal, Select, Row, Col} from "antd";
+import {Form, Input, Modal, Select, Row, Col} from "antd";
 import InputMask from "react-input-mask";
 import type {Client} from "@/types";
 import {useState} from "react";
 
 export const ClientsPageCreate = () => {
-    const {list} = useNavigation();
     const go = useGo();
 
     const {formProps} = useForm<Client>();
