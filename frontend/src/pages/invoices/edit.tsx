@@ -19,7 +19,7 @@ import {
     Select,
     Skeleton,
     Spin,
-    Table,
+    Table, Tag,
     Typography,
 } from "antd";
 import {Edit} from "@refinedev/antd";
@@ -61,7 +61,7 @@ export const InvoicesPageEdit = () => {
 
     const {selectProps: selectPropsClients} = useSelect({
         resource: "clients",
-        optionLabel: "client_name",
+        optionLabel: "partyLegalEntityRegistrationName",
         optionValue: "_id",
     });
 
@@ -94,8 +94,8 @@ export const InvoicesPageEdit = () => {
         {value: "Refunded", label: "Refunded", color: "orange"},
     ];
 
-    const defaultCurrencySymbol = "₹";
-    const defaultCurrency = "INR";
+    const defaultCurrencySymbol = "SAR ﷼";
+    const defaultCurrency = "SAR";
     const defaultStatus = "Draft";
 
     const [selectedCurrency, setSelectedCurrency] = useState(defaultCurrency);
@@ -126,7 +126,7 @@ export const InvoicesPageEdit = () => {
                 symbol = "¥";
                 break;
             case "SAR":
-                symbol = "﷼";
+                symbol = "SAR ﷼";
                 break;
             default:
                 symbol = defaultCurrencySymbol;
@@ -156,6 +156,140 @@ export const InvoicesPageEdit = () => {
         }
         setSelectedStatus(status);
     };
+
+    const defaultInvoiceType = "StandardInvoice";
+    const [selectInvoiceType, setSelectedInvoiceType] = useState(defaultInvoiceType);
+    const invoiceTypeOptions = [
+        {value: "StandardInvoice", label: "Standard Invoice", color: "purple"},
+        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "cyan"},
+        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "magenta"},
+
+        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "blue"},
+        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "green"},
+        {value: "SimplifiedInvoiceDebitNote", label: "Simplified Debit Note", color: "orange"},
+    ];
+
+    const handleInvoiceTypeChange = (value: React.SetStateAction<string>) => {
+        let invoiceType = "";
+
+        switch (value) {
+            case "Simplified Invoice":
+                invoiceType = "SimplifiedInvoice";
+                break;
+            case "Simplified Invoice CreditNote":
+                invoiceType = "SimplifiedInvoiceCreditNote";
+                break;
+            case "Simplified Invoice DebitNote":
+                invoiceType = "SimplifiedInvoiceDebitNote";
+                break;
+
+            case "Standard Invoice":
+                invoiceType = "StandardInvoice";
+                break;
+            case "Standard Invoice CreditNote":
+                invoiceType = "StandardInvoiceCreditNote";
+                break;
+            case "Standard Invoice DebitNote":
+                invoiceType = "StandardInvoiceDebitNote";
+                break;
+
+            default:
+                invoiceType = defaultInvoiceType; // fallback
+        }
+
+        setSelectedInvoiceType(invoiceType);
+    };
+
+
+    const defaultTaxCategory = "S";
+    const [selectTaxCategory, setSelectedTaxCategory] = useState(defaultTaxCategory);
+    const taxCategoryOptions = [
+        {value: "S", label: "Standard Rated Supply"},
+        {value: "Z", label: "Zero Rated Supply"},
+        {value: "E", label: "Exempt Supply"},
+        {value: "O", label: "Out of Scope"},
+    ];
+
+    const handleTaxCategoryChange = (value: React.SetStateAction<string>) => {
+        let taxCategory = "";
+        switch (value) {
+            case "S":
+                taxCategory = "S";
+                break;
+            case "Z":
+                taxCategory = "Z";
+                break;
+            case "E":
+                taxCategory = "E";
+                break;
+
+            case "O":
+                taxCategory = "O";
+                break;
+
+            default:
+                taxCategory = defaultTaxCategory; // fallback
+        }
+        setSelectedTaxCategory(taxCategory);
+    };
+
+
+    const defaultPaymentMeans = "10";
+    const [selectPaymentMeans, setSelectedPaymentMeans] = useState(defaultTaxCategory);
+    const paymentMeansOptions = [
+        {value: "10", label: "Cash", color: "green"},
+        {value: "20", label: "Cheque", color: "purple"},
+        {value: "30", label: "Credit Transfer (Bank Transfer)", color: "blue"},
+        {value: "31", label: "Debit Transfer", color: "cyan"},
+        {value: "42", label: "Payment to Bank Account", color: "volcano"},
+        {value: "48", label: "Bank Card (POS/Credit/Debit)", color: "gold"},
+        {value: "49", label: "Direct Debit", color: "magenta"},
+        {value: "57", label: "Standing Order", color: "orange"},
+        {value: "97", label: "Other (Not Defined)", color: "red"},
+        {value: "ZZZ", label: "Mutually Defined", color: "geekblue"},
+    ];
+
+    const handlePaymentMeansChange = (value: React.SetStateAction<string>) => {
+        let paymentMeans = "";
+
+        switch (value) {
+            case "10":
+                paymentMeans = "10"; // Cash
+                break;
+            case "20":
+                paymentMeans = "20"; // Cheque
+                break;
+            case "30":
+                paymentMeans = "30"; // Credit Transfer
+                break;
+            case "31":
+                paymentMeans = "31"; // Debit Transfer
+                break;
+            case "42":
+                paymentMeans = "42"; // Payment to Bank Account
+                break;
+            case "48":
+                paymentMeans = "48"; // Bank Card
+                break;
+            case "49":
+                paymentMeans = "49"; // Direct Debit
+                break;
+            case "57":
+                paymentMeans = "57"; // Standing Order
+                break;
+            case "97":
+                paymentMeans = "97"; // Other
+                break;
+            case "ZZZ":
+                paymentMeans = "ZZZ"; // Mutually Defined
+                break;
+            default:
+                paymentMeans = defaultPaymentMeans; // fallback
+        }
+
+        setSelectedPaymentMeans(paymentMeans);
+    };
+
 
     const [tax, setTax] = useState<number>(queryResult?.data?.data?.tax || 0);
 
@@ -231,126 +365,179 @@ export const InvoicesPageEdit = () => {
                     }
                 >
 
-                    <Flex
-                        align="center"
-                        gap={40}
-                        wrap="wrap"
-                        style={{padding: "32px"}}
-                    >
-                        <Form.Item
-                            label="Account"
-                            name={["account", "_id"]}
-                            rules={[{required: true}]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <Select
-                                {...selectPropsAccounts}
-                                placeholder="Please select account"
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            label="Client"
-                            name={["client", "_id"]}
-                            rules={[{required: true}]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <Select
-                                {...selectPropsClients}
-                                placeholder="Please select client"
-                            />
-                        </Form.Item>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Account"
+                                name={["account", "_id"]}
+                                rules={[{required: true}]}
 
-                        <Form.Item
-                            label="Invoice Date"
-                            name="invoiceDate"
-                            getValueProps={(value) => ({ value: dayjs(value) })}
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <DatePicker format="DD-MM-YYYY"/>
-                        </Form.Item>
-                    </Flex>
+                            >
+                                <Select
+                                    {...selectPropsAccounts}
+                                    placeholder="Please select account"
+                                />
+                            </Form.Item>
+                        </Col>
 
-                    <Flex
-                        align="center"
-                        gap={40}
-                        wrap="wrap"
-                        style={{padding: "32px", marginTop: "-75px"}}
-                    >
-                        {/*
-                        <Form.Item
-                            label="Status"
-                            name="status"
-                            rules={[{required: true}]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <Select
-                                placeholder="Select Status"
-                                options={statusOptions}
-                                onChange={handleStatusChange}
-                            />
-                        </Form.Item>
-                        */}
-                        <Form.Item
-                            label="Invoice Status"
-                            name="status"
-                            initialValue={record?.status || "Draft"}
-                            rules={[{ required: true }]}
-                            style={{ flex: 1, minWidth: "250px" }}
-                        >
-                            <Select
-                                options={[
-                                    { value: "Draft", label: "Draft" },
-                                    { value: "Validation Pass", label: "Validation Pass" },
-                                    { value: "Submitted to ZATCA", label: "Submitted to ZATCA" }
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Client"
+                                name={["client", "_id"]}
+                                rules={[{required: true}]}
+
+                            >
+                                <Select
+                                    {...selectPropsClients}
+                                    placeholder="Please select client"
+                                />
+                            </Form.Item>
+                        </Col>
+
+
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Status"
+                                name="status"
+                                rules={[{required: true}]}
+
+                            >
+                                <Select
+                                    placeholder="Select Status"
+                                    onChange={handleStatusChange}
+                                    options={statusOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: (
+                                            <Tag color={opt.color} style={{marginRight: 0}}>
+                                                {opt.label}
+                                            </Tag>
+                                        ),
+                                    }))}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Invoice Date"
+                                name="invoiceDate"
+                                getValueProps={(value) => ({value: dayjs(value)})}
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
                                 ]}
-                                placeholder="Select status"
-                                disabled
-                            />
-                        </Form.Item>
 
-                        <Form.Item
-                            label="Custom Id"
-                            name="custom_id"
-                            rules={[{required: false}]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <Input/>
-                        </Form.Item>
+                            >
+                                <DatePicker format="DD-MM-YYYY"/>
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-                        <Form.Item
-                            label="Currency"
-                            name="currency"
-                            rules={[{required: true}]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <Select
-                                placeholder="Select Currency"
-                                options={currencyOptions}
-                                onChange={handleCurrencyChange}
-                                disabled
-                            />
-                        </Form.Item>
-                    </Flex>
-                    <Flex
-                        align="center"
-                        gap={40}
-                        wrap="wrap"
-                        style={{padding: "32px", marginTop: "-75px"}}
+                    <Row gutter={16}>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Invoice Type"
+                                name="invoice_type"
+                                rules={[{required: true}]}
+
+                            >
+                                <Select
+                                    placeholder="Select Invoice Type"
+                                    onChange={handleInvoiceTypeChange}
+                                    options={invoiceTypeOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: (
+                                            <Tag color={opt.color} style={{marginRight: 0}}>
+                                                {opt.label}
+                                            </Tag>
+                                        ),
+                                    }))}
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Currency"
+                                name="currency"
+                                rules={[{required: true}]}
+
+                            >
+                                <Select
+                                    placeholder="Select Currency"
+                                    onChange={handleCurrencyChange}
+                                    options={currencyOptions}
+                                    disabled
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Tax Category"
+                                name="tax_category"
+                                rules={[{required: true}]}
+
+                            >
+                                <Select
+                                    placeholder="Select Tax Category"
+                                    onChange={handleTaxCategoryChange}
+                                    options={taxCategoryOptions}
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Delivery Date"
+                                name="deliveryDate"
+                                getValueProps={(value) => ({value: dayjs(value)})}
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <DatePicker format="DD-MM-YYYY"/>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={16}>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Payment Means"
+                                name="payment_means"
+                                rules={[{required: true}]}
+
+                            >
+                                <Select
+                                    placeholder="Select Payment Means"
+                                    onChange={handlePaymentMeansChange}
+                                    options={paymentMeansOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: (
+                                            <Tag color={opt.color} style={{marginRight: 0}}>
+                                                {opt.label}
+                                            </Tag>
+                                        ),
+                                    }))}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item
+                        label="Note"
+                        name="note"
+                        rules={[{required: true}]}
                     >
-                        <Form.Item
-                            label="Invoice Name"
-                            name="invoice_name"
-                            rules={[{required: true}]}
-                            style={{flex: 1, minWidth: "250px"}}
-                        >
-                            <Input/>
-                        </Form.Item>
-                    </Flex>
+                        <Input.TextArea
+                            placeholder="Enter notes here"
+                            autoSize={{minRows: 2, maxRows: 6}}/>
+                    </Form.Item>
+
+
                     <Divider style={{margin: 0}}/>
                     <div style={{padding: "32px"}}>
                         <Typography.Title
@@ -418,124 +605,127 @@ export const InvoicesPageEdit = () => {
 
 
                                 <Form.List name="services">
-                                    {(fields, { add, remove }) => (
+                                    {(fields, {add, remove}) => (
                                         <>
-                                <Row>
-                                    {services.map((service, index) => {
-                                        return (
-                                            <Fragment key={index}>
-                                                <Col
-                                                    xs={{span: 7}}
-                                                    className={styles.serviceRowColumn}
-                                                >
-                                                    <Input
-                                                        placeholder="Title"
-                                                        value={service.title}
-                                                        onChange={(e) => {
-                                                            setServices((prev) =>
-                                                                prev.map((item, i) =>
-                                                                    i === index
-                                                                        ? {...item, title: e.target.value}
-                                                                        : item
-                                                                )
-                                                            );
-                                                        }}
-                                                    />
-                                                </Col>
-                                                <Col
-                                                    xs={{span: 5}}
-                                                    className={styles.serviceRowColumn}
-                                                >
-                                                    <InputNumber
-                                                        addonBefore={selectedCurrencySymbol}
-                                                        style={{width: "100%"}}
-                                                        placeholder="Unit Price"
-                                                        min={0}
-                                                        value={service.unitPrice}
-                                                        onChange={(value) => {
-                                                            handleServiceNumbersChange(
-                                                                index,
-                                                                "unitPrice",
-                                                                value || 0
-                                                            );
-                                                        }}
-                                                    />
-                                                </Col>
-                                                <Col
-                                                    xs={{span: 4}}
-                                                    className={styles.serviceRowColumn}
-                                                >
-                                                    <InputNumber
-                                                        style={{width: "100%"}}
-                                                        placeholder="Quantity"
-                                                        min={0}
-                                                        value={service.quantity}
-                                                        onChange={(value) => {
-                                                            handleServiceNumbersChange(
-                                                                index,
-                                                                "quantity",
-                                                                value || 0
-                                                            );
-                                                        }}
-                                                    />
-                                                </Col>
-                                                <Col
-                                                    xs={{span: 4}}
-                                                    className={styles.serviceRowColumn}
-                                                >
-                                                    <InputNumber
-                                                        addonAfter="%"
-                                                        style={{width: "100%"}}
-                                                        placeholder="Discount"
-                                                        min={0}
-                                                        value={service.discount}
-                                                        onChange={(value) => {
-                                                            handleServiceNumbersChange(
-                                                                index,
-                                                                "discount",
-                                                                value || 0
-                                                            );
-                                                        }}
-                                                    />
-                                                </Col>
-                                                <Col
-                                                    xs={{span: 3}}
-                                                    className={styles.serviceRowColumn}
-                                                    style={{
-                                                        justifyContent: "flex-end",
-                                                    }}
-                                                >
-                                                    <NumberField
-                                                        value={service.totalPrice}
-                                                        options={{
-                                                            style: "currency",
-                                                            currency: selectedCurrency,
-                                                        }}
-                                                    />
-                                                </Col>
-                                                <Col
-                                                    xs={{span: 1}}
-                                                    className={styles.serviceRowColumn}
-                                                    style={{
-                                                        paddingLeft: "0",
-                                                        justifyContent: "flex-end",
-                                                    }}
-                                                >
-                                                    <Button
-                                                        danger
-                                                        size="small"
-                                                        icon={<DeleteOutlined/>}
-                                                        onClick={() => {
-                                                            setServices((prev) =>
-                                                                prev.filter((_, i) => i !== index)
-                                                            );
-                                                        }}
-                                                    />
-                                                </Col>
-                                            </Fragment>
-                                        );
-                                    })}
-                                </Row>
+                                            <Row>
+                                                {services.map((service, index) => {
+                                                    return (
+                                                        <Fragment key={index}>
+                                                            <Col
+                                                                xs={{span: 7}}
+                                                                className={styles.serviceRowColumn}
+                                                            >
+                                                                <Input
+                                                                    placeholder="Title"
+                                                                    value={service.title}
+                                                                    onChange={(e) => {
+                                                                        setServices((prev) =>
+                                                                            prev.map((item, i) =>
+                                                                                i === index
+                                                                                    ? {
+                                                                                        ...item,
+                                                                                        title: e.target.value
+                                                                                    }
+                                                                                    : item
+                                                                            )
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </Col>
+                                                            <Col
+                                                                xs={{span: 5}}
+                                                                className={styles.serviceRowColumn}
+                                                            >
+                                                                <InputNumber
+                                                                    addonBefore={selectedCurrencySymbol}
+                                                                    style={{width: "100%"}}
+                                                                    placeholder="Unit Price"
+                                                                    min={0}
+                                                                    value={service.unitPrice}
+                                                                    onChange={(value) => {
+                                                                        handleServiceNumbersChange(
+                                                                            index,
+                                                                            "unitPrice",
+                                                                            value || 0
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </Col>
+                                                            <Col
+                                                                xs={{span: 4}}
+                                                                className={styles.serviceRowColumn}
+                                                            >
+                                                                <InputNumber
+                                                                    style={{width: "100%"}}
+                                                                    placeholder="Quantity"
+                                                                    min={0}
+                                                                    value={service.quantity}
+                                                                    onChange={(value) => {
+                                                                        handleServiceNumbersChange(
+                                                                            index,
+                                                                            "quantity",
+                                                                            value || 0
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </Col>
+                                                            <Col
+                                                                xs={{span: 4}}
+                                                                className={styles.serviceRowColumn}
+                                                            >
+                                                                <InputNumber
+                                                                    addonAfter="%"
+                                                                    style={{width: "100%"}}
+                                                                    placeholder="Discount"
+                                                                    min={0}
+                                                                    value={service.discount}
+                                                                    onChange={(value) => {
+                                                                        handleServiceNumbersChange(
+                                                                            index,
+                                                                            "discount",
+                                                                            value || 0
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </Col>
+                                                            <Col
+                                                                xs={{span: 3}}
+                                                                className={styles.serviceRowColumn}
+                                                                style={{
+                                                                    justifyContent: "flex-end",
+                                                                }}
+                                                            >
+                                                                <NumberField
+                                                                    value={service.totalPrice}
+                                                                    options={{
+                                                                        style: "currency",
+                                                                        currency: selectedCurrency,
+                                                                    }}
+                                                                />
+                                                            </Col>
+                                                            <Col
+                                                                xs={{span: 1}}
+                                                                className={styles.serviceRowColumn}
+                                                                style={{
+                                                                    paddingLeft: "0",
+                                                                    justifyContent: "flex-end",
+                                                                }}
+                                                            >
+                                                                <Button
+                                                                    danger
+                                                                    size="small"
+                                                                    icon={<DeleteOutlined/>}
+                                                                    onClick={() => {
+                                                                        setServices((prev) =>
+                                                                            prev.filter((_, i) => i !== index)
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </Col>
+                                                        </Fragment>
+                                                    );
+                                                })}
+                                            </Row>
                                         </>
                                     )}
                                 </Form.List>

@@ -48,8 +48,8 @@ export const ClientsPageList = ({ children }: PropsWithChildren) => {
 
   const { selectProps: selectPropsName } = useSelect({
     resource: "clients",
-    optionLabel: "client_name",
-    optionValue: "client_name",
+    optionLabel: "partyLegalEntityRegistrationName",
+    optionValue: "partyLegalEntityRegistrationName",
   });
 
   const { selectProps: selectPropsAccountName } = useSelect({
@@ -104,12 +104,12 @@ export const ClientsPageList = ({ children }: PropsWithChildren) => {
           />
           <Table.Column
             title="Client Name"
-            dataIndex="client_name"
-            key="client_name"
+            dataIndex="partyLegalEntityRegistrationName"
+            key="partyLegalEntityRegistrationName"
             sorter
-            defaultSortOrder={getDefaultSortOrder("client_name", sorters)}
+            defaultSortOrder={getDefaultSortOrder("partyLegalEntityRegistrationName", sorters)}
             defaultFilteredValue={getDefaultFilter(
-              "client_name",
+              "partyLegalEntityRegistrationName",
               filters,
               "in"
             )}
@@ -167,23 +167,27 @@ export const ClientsPageList = ({ children }: PropsWithChildren) => {
             )}
           />
           <Table.Column
-            title="Total"
-            dataIndex="total"
-            key="total"
+            title="Phone Number"
+            dataIndex="phoneNumber"
+            key="phoneNumber"
             width={120}
             align="end"
             sorter
-            defaultSortOrder={getDefaultSortOrder("total", sorters)}
-            render={(_, record: Client) => {
-              let total = 0;
-              record.invoices?.forEach((invoice) => {
-                total += invoice.total;
-              });
-              return (
-                <TagField value={`${currencySymbol} ${total}`} color="green" />
-              );
-            }}
+            defaultSortOrder={getDefaultSortOrder("phoneNumber", sorters)}
+            render={(phone: string) => (
+                <TagField value={phone || "N/A"} color="blue" />
+            )}
           />
+             {/*render={(_, record: Client) => {*/}
+          {/*//     let total = 0;*/}
+          {/*//     record.invoices?.forEach((invoice) => {*/}
+          {/*//       total += invoice.total;*/}
+          {/*//     });*/}
+          {/*//     return (*/}
+          {/*//       <TagField value={`${currencySymbol} ${total}`} color="green" />*/}
+          {/*//     );*/}
+          {/*//   }}*/}
+          {/*// />*/}
           <Table.Column
             title="Account"
             dataIndex="account.account_name"
