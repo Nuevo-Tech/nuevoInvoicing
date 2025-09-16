@@ -1,4 +1,4 @@
-import {useGo, useOne} from "@refinedev/core";
+import {useGo, useNavigation, useOne} from "@refinedev/core";
 import {useForm, useSelect} from "@refinedev/antd";
 import {Flex, Form, Input, Modal, Select, Row, Col} from "antd";
 import InputMask from "react-input-mask";
@@ -6,6 +6,7 @@ import type {Client} from "@/types";
 import {useState} from "react";
 
 export const ClientsPageCreate = () => {
+    const {list} = useNavigation();
     const go = useGo();
 
     const {formProps} = useForm<Client>();
@@ -31,7 +32,6 @@ export const ClientsPageCreate = () => {
 
     const handleTaxTypeChange = (value: React.SetStateAction<string>) => {
         let taxType = "";
-
         switch (value) {
             case "VAT":
                 taxType = "taxType";
@@ -64,7 +64,7 @@ export const ClientsPageCreate = () => {
             open
             onCancel={() => {
                 go({
-                    to: {resource: "accounts", action: "list"},
+                    to: {resource: "clients", action: "list"},
                     options: {keepQuery: true},
                 });
             }}
