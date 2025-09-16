@@ -31,13 +31,17 @@ export type Account = {
 
 export type Client = {
   id: string;
-  client_name: string;
+  streetName: string;
+  buildingNumber: string;
+  citySubdivisionName: string;
+  cityName: string;
+  postalZone: string;
+  countryIdentificationCode: string;
+  partyTaxSchemeCompanyID: string;
+  partyTaxSchemeTaxSchemeId: string;
+  partyLegalEntityRegistrationName: string;
   client_email: string;
-  country: string;
-  address: string;
-  phone: string;
-  createdDate: string;
-  updatedDate: string;
+  phoneNumber: string;
   invoices?: Invoice[];
   account: Account;
   userId: string;
@@ -45,21 +49,23 @@ export type Client = {
 
 export type Invoice = {
   id: string;
-  invoice_name: string;
+  account: Account;
+  client: Client;
+  services: Service[];
+  status: string;
   invoiceDate: string;
+  deliveryDate: string;
+  invoice_type: string;
+  currency: string;
+  tax_category: string;
+  payment_means: string;
+  note: string;
+
   discount: number;
   tax: number;
   custom_id: string;
-  services: Service[];
   subtotal: number;
   total: number;
-  createdDate: string;
-  updatedDate: string;
-  account: Account;
-  client: Client;
-  note: string;
-  currency: string;
-  status: string;
 };
 
 export type Service = {

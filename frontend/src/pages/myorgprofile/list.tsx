@@ -1,5 +1,5 @@
 import {type HttpError, useNavigation} from "@refinedev/core";
-import {DeleteButton, Show,List, useForm} from "@refinedev/antd";
+import {DeleteButton, Show, useForm} from "@refinedev/antd";
 import {Card, Col, Divider, Flex, Form, Row, Typography} from "antd";
 import {
     BankOutlined,
@@ -24,7 +24,7 @@ export const MyOrgProfilePageEdit = () => {
     >({
         resource: "myorgprofile",
         redirect: false,
-        id:"1",
+        id: "1",
         meta: {
             populate: ["logo", "myorgprofile"],
         },
@@ -119,7 +119,7 @@ export const MyOrgProfilePageEdit = () => {
                                 formItemProps={{
                                     name: "partyLegalEntityRegistrationName",
                                     label: "Organization Registration Name",
-                                    rules: [{required: false}],
+                                    rules: [{required: true}],
                                 }}
                             />
                             <Divider style={{margin: 0}}/>
@@ -164,7 +164,7 @@ export const MyOrgProfilePageEdit = () => {
                                 formItemProps={{
                                     name: "streetName",
                                     label: "Street Name",
-                                    rules: [{required: true}],
+                                    rules: [{required: false}],
                                 }}
                             />
                             <FormItemEditableInputText
@@ -174,7 +174,7 @@ export const MyOrgProfilePageEdit = () => {
                                 formItemProps={{
                                     name: "buildingNumber",
                                     label: "Building Number",
-                                    rules: [{required: true}],
+                                    rules: [{required: false}],
                                 }}
                             />
                             <FormItemEditableInputText
@@ -184,7 +184,7 @@ export const MyOrgProfilePageEdit = () => {
                                 formItemProps={{
                                     name: "citySubdivisionName",
                                     label: "City Sub Division",
-                                    rules: [{required: true}],
+                                    rules: [{required: false}],
                                 }}
                             />
                             <FormItemEditableInputText
