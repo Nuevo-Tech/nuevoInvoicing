@@ -1,10 +1,16 @@
-const fs = require("fs");
-const path = require("path");
-const Helper = require("./Helper.js");
-const DBQueryHelper = require("./DBQueryHelper.js");
+import fs from "fs";
+import path from "path";
+import Helper from "../helpers/Helper.js";
+import {generateInvoiceId} from "../helpers/DBQueryHelper.js";
+import {fileURLToPath} from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const templatePath = path.join(__dirname, "zatcaInvoiceTemplate.json");
+
 const baseTemplate = JSON.parse(fs.readFileSync(templatePath, "utf-8"));
+const taxScheme = "VAT";
+
 
 class InvoiceBuilder {
     constructor() {
@@ -34,39 +40,150 @@ class InvoiceBuilder {
         return this.invoice;
     }
 
-    async createInvoiceFromRequest(reqBody, flag) {
-        if(flag === "new"){
-            const customInvoiceId = await DBQueryHelper.generateInvoiceId(
-                reqBody.client.partyLegalEntityRegistrationName
-            );
+    async createInvoiceFromRequest(reqBody, flag, Client, MyOrgProfile) {
+        // let invoiceDoc = await Invoice.findOne({ uuid: reqBody.uuid });
+        //
+        // if (!invoiceDoc) {
+        //     invoiceDoc = new Invoice(builtInvoice);
+        // }
+        if (flag === "new") {
+            const customInvoiceId = await generateInvoiceId(Client);
             this.setField("id", customInvoiceId);
             this.setField("uuid", Helper.generateUUID());
         }
 
-        let typeCodeOfInvoice = Helper.getZatcaInvoiceType(reqBody.invoice_type_code_value);
+        let typeCodeOfInvoice = Helper.getZatcaInvoiceType(reqBody.invoice_type);
 
-        let chargeIndicator = false;
-        let allowanceChargeReason = "discount";
-        let allowanceChargeAmount = 0;
-        if(reqBody.surcharge > 0){
-            chargeIndicator=t
+        const totalTaxAmount = reqBody.subtotal * (reqBody.tax_percentage / 100);
 
+        const allowanceCharges = [];
+
+        // Discount
+        if (reqBody.total_discount_amount >= 0) {
+            allowanceCharges.push({
+                chargeIndicator: false,
+                allowanceChargeReason: "discount",
+                amount: {
+                    value: Helper.toTwoDecimalsString(reqBody.total_discount_amount),
+                    currencyId: reqBody.currency || "SAR",
+                },
+                taxCategory: {
+                    id: reqBody.tax_category,
+                    percent: reqBody.tax_percentage,
+                    taxScheme: {id: taxScheme},
+                },
+            });
         }
 
+        // Surcharge
+        // if (reqBody.total_surcharge_amount > 0) {
+        //     allowanceCharges.push({
+        //         chargeIndicator: true,
+        //         allowanceChargeReason: "surcharge",
+        //         amount: {
+        //             value: Helper.toTwoDecimalsString(reqBody.total_surcharge_amount),
+        //             currencyId: reqBody.currency || reqBody.currency || "SAR",
+        //         },
+        //         taxCategory: {
+        //             id: reqBody.tax_category,
+        //             percent: reqBody.tax_percentage,
+        //             taxScheme: {id: taxScheme},
+        //         },
+        //     });
+        // }
+
+        //tax total
+        const taxTotal = [
+            {
+                taxAmount: {
+                    value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.6"
+                    currencyId: reqBody.currency || "SAR",
+                },
+            },
+            {
+                taxAmount: {
+                    value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.6"
+                    currencyId: reqBody.currency || "SAR",
+                },
+                taxSubtotal: {
+                    taxableAmount: {
+                        value: Helper.toTwoDecimalsString(reqBody.subtotal), // e.g. "4.00"
+                        currencyId: reqBody.currency || "SAR",
+                    },
+                    taxAmount: {
+                        value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.60"
+                        currencyId: reqBody.currency || "SAR",
+                    },
+                    taxCategory: {
+                        id: reqBody.tax_category, // e.g. "S"
+                        percent: reqBody.tax_percentage, // e.g. "15.00"
+                        taxScheme: {
+                            id: taxScheme,
+                        },
+                    },
+                },
+            },
+        ];
+
+        //items
+        const services = reqBody.services || [];
+
+        // ✅ total without discount
+        const totalWithoutDiscount = services.reduce((sum, service) => {
+            return sum + (service.price_without_discount);
+        }, 0);
+
+        // ✅ total without discount
+        const totalAfterDiscountAndSurcharge = reqBody.subtotal - reqBody.total_discount_amount + reqBody.total_surcharge_amount;
+
+        // Build legalMonetaryTotal
+        const legalMonetaryTotal = {
+            lineExtensionAmount: {
+                value: Helper.toTwoDecimalsString(totalWithoutDiscount),   // e.g. "4.00"
+                currencyId: reqBody.currency || "SAR",
+            },
+            taxExclusiveAmount: {
+                value: Helper.toTwoDecimalsString(totalAfterDiscountAndSurcharge),   // e.g. "4.00"
+                currencyId: reqBody.currency || "SAR",
+            },
+            taxInclusiveAmount: {
+                value: Helper.toTwoDecimalsString(reqBody.total),   // e.g. "4.60"
+                currencyId: reqBody.currency || "SAR",
+            },
+            allowanceTotalAmount: {
+                value: Helper.toTwoDecimalsString(reqBody.total_discount_amount) || "0.00",
+                currencyId: reqBody.currency || "SAR",
+            },
+            prepaidAmount: {
+                value: Helper.toTwoDecimalsString(reqBody.prepaid_amount) || "0.00",
+                currencyId: reqBody.currency || "SAR",
+            },
+            payableAmount: {
+                value: Helper.toTwoDecimalsString(reqBody.total),         // e.g. "4.60"
+                currencyId: reqBody.currency || reqBody.currency || "SAR",
+            },
+        };
+
+        //invoicelines
+        const invoiceLines = Helper.buildInvoiceLines(services, reqBody.currency, reqBody.tax_category, reqBody.tax_percentage, taxScheme);
+        const supplierDetails = Helper.buildAccountingSupplierParty(MyOrgProfile);
+        const customerDetails = Helper.buildAccountingCustomerParty(Client);
 
         this.bulkSet({
+            //id uuid are set above
             issueDate: Helper.formatDateToZatca(reqBody.invoiceDate),
             issueTime: Helper.getTimeNowZatca(),
             "invoiceTypeCode": typeCodeOfInvoice,
+            "delivery.actualDeliveryDate": Helper.formatDateToZatca(reqBody.deliveryDate),
             "paymentMeans.paymentMeansCode": reqBody.payment_means,
-            "allowanceCharge.taxCategory.id": reqBody.tax_category,
-            "allowanceCharge.taxCategory.percentage": reqBody.tax,
-            "allowanceCharge.taxCategory.taxScheme.id": "VAT",
-            "allowanceCharge.amount.value": reqBody.allowance_charge_amount_value,
+            allowanceCharge: allowanceCharges,
+            taxTotal: taxTotal,
+            legalMonetaryTotal: legalMonetaryTotal,
+            accountingSupplierParty: supplierDetails,
+            accountingCustomerParty: customerDetails,
         });
-
         return this.build();
     }
 }
 
-module.exports = InvoiceBuilder;
+export default InvoiceBuilder;

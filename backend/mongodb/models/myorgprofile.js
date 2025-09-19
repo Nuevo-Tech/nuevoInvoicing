@@ -28,7 +28,6 @@ const MyOrgProfileSchema = new mongoose.Schema({
     },
     {timestamps: true}
 );
-
 const myOrgProfileModel = mongoose.model("MyOrgProfile", MyOrgProfileSchema);
 
 export default myOrgProfileModel;

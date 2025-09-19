@@ -34,12 +34,14 @@ const InvoiceSchema = new mongoose.Schema({
         zatca_qr_code: {type: String},
         discount_percentage: {type: Number, default: 0},
         total_discount_amount: {type: Number, default: 0},
-        surcharge: {type: Number, default: 0},
+        surcharge_percentage: {type: Number, default: 0},
+        total_surcharge_amount: {type: Number, default: 0},
         tax_percentage: {type: Number, default: 0},
         total_tax_amount: {type: Number, default: 0},
         custom_id: {type: String},
         subtotal: {type: Number, required: true},
         total: {type: Number, required: true},
+        prepaid_amount: {type: Number, default: 0},
     },
     {timestamps: true} // adds createdAt, updatedAt
 );

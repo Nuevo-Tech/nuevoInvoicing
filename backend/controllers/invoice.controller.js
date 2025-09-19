@@ -2,8 +2,10 @@ import Invoice from "../mongodb/models/invoice.js";
 import Account from "../mongodb/models/account.js";
 import Service from "../mongodb/models/service.js";
 import Client from "../mongodb/models/client.js";
+import MyOrgProfile from "../mongodb/models/myorgprofile.js";
 import User from "../mongodb/models/user.js";
 import mongoose from "mongoose";
+import InvoiceBuilder from "../helpers/InvoiceBuilder.js";
 
 const roundToFour = (num) => {
     return Number(Number(num).toFixed(4));
@@ -148,9 +150,10 @@ const createInvoice = async (req, res) => {
             allowance_charge_amount_value,
             zatca_qr_code,
             discount,
-            tax,
+            tax_percentage,
             subtotal,
-            total
+            total,
+            userId,
         } = req.body;
 
         if (
@@ -164,13 +167,13 @@ const createInvoice = async (req, res) => {
             return res.status(400).json({message: "Missing required fields"});
         }
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({message: "User Not Found"});
-        }
+        // const user = await User.findById(userId);
+        // if (!user) {
+        //     return res.status(404).json({message: "User Not Found"});
+        // }
 
-        const maxIdInvoice = await Invoice.findOne().sort({id: -1}).select("id");
-        const nextId = maxIdInvoice ? parseInt(maxIdInvoice.id) + 1 : 1;
+        // const maxIdInvoice = await Invoice.findOne().sort({id: -1}).select("id");
+        // const nextId = maxIdInvoice ? parseInt(maxIdInvoice.id) + 1 : 1;
 
         const serviceDocs = await Service.insertMany(
             services.map((service) => ({...service, creator: userId})),
@@ -179,11 +182,22 @@ const createInvoice = async (req, res) => {
         let subTotalRounded = roundToFour(subtotal);
         let totalRounded = roundToFour(total);
 
-        invoiceDate = formatDateToZatca(invoiceDate);
-        deliveryDate = formatDateToZatca(deliveryDate);
+        const clientDoc = await Client.findById(client)
+        const myOrgProfile = await MyOrgProfile.findOne();
+
+        if (!clientDoc) {
+            return res.status(404).json({message:"Client not found for clientId:" + clientDoc });
+        }
+        if (!myOrgProfile) {
+            return res.status(404).json({message:"OrgProfile not found" });
+        }
+
+        const builder = new InvoiceBuilder();
+
+        const jsonPayload = await builder.createInvoiceFromRequest(req.body, "new", clientDoc, myOrgProfile);
 
         const newInvoice = new Invoice({
-            id: nextId,
+            id,
             invoice_id,
             uuid,
             invoice_name,
@@ -198,7 +212,7 @@ const createInvoice = async (req, res) => {
             tax_scheme_id,
             payment_means,
             createdDate: new Date(),
-            tax,
+            tax_percentage,
             subtotal: subTotalRounded,
             total: totalRounded,
             discount,
