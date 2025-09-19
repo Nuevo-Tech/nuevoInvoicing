@@ -293,26 +293,32 @@ export const InvoicesPageEdit = () => {
 
     const [tax, setTax] = useState<number>(0);
 
+    const totalDiscountAmount = services.reduce(
+        (acc, service) =>
+            acc + service.item_discount_amount, 0);
+
     const subtotal = services.reduce(
         (acc, service) =>
             acc +
-            (service.unitPrice * service.quantity * (100 - service.discount)) / 100,
+            (service.unitPrice * service.quantity * (100 - service.item_discount_percentage)) / 100,
         0
     );
     const total = subtotal + (subtotal * tax) / 100;
 
     const handleServiceNumbersChange = (
         index: number,
-        key: "quantity" | "discount" | "unitPrice",
+        key: "quantity" | "item_discount_percentage" | "unitPrice",
         value: number
     ) => {
         setServices((prev) => {
             const currentService = {...prev[index]};
             currentService[key] = value;
+            let priceBeforeDiscount = currentService.unitPrice * currentService.quantity;
             currentService.totalPrice =
-                currentService.unitPrice *
-                currentService.quantity *
-                ((100 - currentService.discount) / 100);
+                priceBeforeDiscount *
+                ((100 - currentService.item_discount_percentage) / 100);
+
+            currentService.item_discount_amount = priceBeforeDiscount - currentService.totalPrice;
 
             return prev.map((item, i) => (i === index ? currentService : item));
         });
@@ -347,8 +353,9 @@ export const InvoicesPageEdit = () => {
                         userId: userId,
                         services: services,
                         subtotal: subtotal,
+                        tax_percentage: tax,
+                        total_discount_amount: totalDiscountAmount,
                         total: total,
-                        tax: tax,
                     });
                 }}
             >
@@ -686,13 +693,13 @@ export const InvoicesPageEdit = () => {
                                                                 <InputNumber
                                                                     addonAfter="%"
                                                                     style={{width: "100%"}}
-                                                                    placeholder="Discount"
+                                                                    placeholder="Discount Percentage"
                                                                     min={0}
-                                                                    value={service.discount}
+                                                                    value={service.item_discount_percentage}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
                                                                             index,
-                                                                            "discount",
+                                                                            "item_discount_percentage",
                                                                             value || 0
                                                                         );
                                                                     }}
@@ -757,7 +764,8 @@ export const InvoicesPageEdit = () => {
                                                     unitPrice: 0,
                                                     unitCode: "",
                                                     quantity: 0,
-                                                    discount: 0,
+                                                    item_discount_percentage: 0,
+                                                    item_discount_amount: 0,
                                                     totalPrice: 0,
                                                     description: "",
                                                 },

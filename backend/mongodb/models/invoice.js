@@ -32,10 +32,11 @@ const InvoiceSchema = new mongoose.Schema({
         allowance_charge_amount_value: {type: String},
 
         zatca_qr_code: {type: String},
-
-        discount: {type: Number, default: 0},
+        discount_percentage: {type: Number, default: 0},
+        total_discount_amount: {type: Number, default: 0},
         surcharge: {type: Number, default: 0},
-        tax: {type: Number, default: 0},
+        tax_percentage: {type: Number, default: 0},
+        total_tax_amount: {type: Number, default: 0},
         custom_id: {type: String},
         subtotal: {type: Number, required: true},
         total: {type: Number, required: true},
