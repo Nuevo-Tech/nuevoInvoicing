@@ -1,0 +1,180 @@
+{
+  "profileId": "reporting:1.0",
+  "id": "SME00024",
+  "uuid": "8d487816-70b8-4ade-a618-9d620b73814b",
+  "issueDate": "2022-09-07",
+  "issueTime": "12:21:28",
+  "invoiceTypeCode": {
+    "value": "388",
+    "name": "0100000"
+  },
+  "documentCurrencyCode": "SAR",
+  "taxCurrencyCode": "SAR",
+  "accountingSupplierParty": {
+    "party": {
+      "partyIdentification": {
+        "id": "1010010000",
+        "schemeID": "CRN"
+      },
+      "postalAddress": {
+        "streetName": "الامير سلطان | Prince Sultan",
+        "buildingNumber": "2322",
+        "citySubdivisionName": "المربع | Al-Murabba",
+        "cityName": "الرياض | Riyadh",
+        "postalZone": "23333",
+        "country": {
+          "identificationCode": "SA"
+        }
+      },
+      "partyTaxScheme": {
+        "companyID": "399999999900003",
+        "taxScheme": {
+          "id": "VAT"
+        }
+      },
+      "partyLegalEntity": {
+        "registrationName": "شركة توريد التكنولوجيا بأقصى سرعة المحدودة | Maximum Speed Tech Supply LTD"
+      }
+    }
+  },
+  "accountingCustomerParty": {
+    "party": {
+      "postalAddress": {
+        "streetName": "صلاح الدين | Salah Al-Din",
+        "buildingNumber": "1111",
+        "citySubdivisionName": "المروج | Al-Murooj",
+        "cityName": "الرياض | Riyadh",
+        "postalZone": "12222",
+        "country": {
+          "identificationCode": "SA"
+        }
+      },
+      "partyTaxScheme": {
+        "companyID": "399999999800003",
+        "taxScheme": {
+          "id": "VAT"
+        }
+      },
+      "partyLegalEntity": {
+        "registrationName": "شركة نماذج فاتورة المحدودة | Fatoora Samples LTD"
+      }
+    }
+  },
+  "delivery": {
+    "actualDeliveryDate": "2022-09-07"
+  },
+  "paymentMeans": {
+    "paymentMeansCode": "10"
+  },
+  "allowanceCharge": {
+    "chargeIndicator": false,
+    "allowanceChargeReason": "discount",
+    "amount": {
+      "value": "0.00",
+      "currencyId": "SAR"
+    },
+    "taxCategory": {
+      "id": "S",
+      "percent": "15",
+      "taxScheme": {
+        "id": "VAT"
+      }
+    }
+  },
+  "taxTotal": [
+    {
+      "taxAmount": {
+        "value": "0.6",
+        "currencyId": "SAR"
+      }
+    },
+    {
+      "taxAmount": {
+        "value": "0.6",
+        "currencyId": "SAR"
+      },
+      "taxSubtotal": {
+        "taxableAmount": {
+          "value": "4.00",
+          "currencyId": "SAR"
+        },
+        "taxAmount": {
+          "value": "0.60",
+          "currencyId": "SAR"
+        },
+        "taxCategory": {
+          "id": "S",
+          "percent": "15.00",
+          "taxScheme": {
+            "id": "VAT"
+          }
+        }
+      }
+    }
+  ],
+  "legalMonetaryTotal": {
+    "lineExtensionAmount": {
+      "value": "4.00",
+      "currencyId": "SAR"
+    },
+    "taxExclusiveAmount": {
+      "value": "4.00",
+      "currencyId": "SAR"
+    },
+    "taxInclusiveAmount": {
+      "value": "4.60",
+      "currencyId": "SAR"
+    },
+    "allowanceTotalAmount": {
+      "value": "0.00",
+      "currencyId": "SAR"
+    },
+    "prepaidAmount": {
+      "value": "0.00",
+      "currencyId": "SAR"
+    },
+    "payableAmount": {
+      "value": "4.60",
+      "currencyId": "SAR"
+    }
+  },
+  "invoiceLine": [
+    {
+      "id": "1",
+      "invoicedQuantity": {
+        "value": "2.000000",
+        "unitCode": "PCE"
+      },
+      "lineExtensionAmount": {
+        "value": "4.00",
+        "currencyId": "SAR"
+      },
+      "taxTotal": {
+        "taxAmount": {
+          "value": "0.60",
+          "currencyId": "SAR"
+        },
+        "roundingAmount": {
+          "value": "4.60",
+          "currencyId": "SAR"
+        }
+      },
+      "item": {
+        "name": "قلم رصاص",
+        "classifiedTaxCategory": {
+          "id": "S",
+          "percent": "15.00",
+          "taxScheme": {
+            "id": "VAT"
+          }
+        }
+      },
+      "price": {
+        "priceAmount": {
+          "value": "2.00",
+          "currencyId": "SAR"
+        }
+      }
+    }
+  ]
+}

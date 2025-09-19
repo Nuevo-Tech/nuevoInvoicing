@@ -1,181 +1,196 @@
-import type { UploadFile } from "antd";
-import type { UploadChangeParam } from "antd/lib/upload";
+import type {UploadFile} from "antd";
+import type {UploadChangeParam} from "antd/lib/upload";
 
 export type UploadResponse = UploadChangeParam<UploadFile>;
 
 export type AccountForm = {
-  account_name: string;
-  owner_name: string;
-  owner_email: string;
-  country: string;
-  address: string;
-  phone: string;
-  logo: string;
+    account_name: string;
+    owner_name: string;
+    owner_email: string;
+    country: string;
+    address: string;
+    phone: string;
+    logo: string;
 };
 
 export interface Logo {
-  name: string;
-  url: string;
-  size: number;
-  uid: string;
+    name: string;
+    url: string;
+    size: number;
+    uid: string;
 }
 
 export type Account = {
-  id: string;
-  createdDate: string;
-  updatedDate: string;
-  logo?: string;
-  invoices?: Invoice[];
-  clients?: Client[];
+    id: string;
+    createdDate: string;
+    updatedDate: string;
+    logo?: string;
+    invoices?: Invoice[];
+    clients?: Client[];
 } & Omit<AccountForm, "logo">;
 
 export type Client = {
-  id: string;
-  streetName: string;
-  buildingNumber: string;
-  citySubdivisionName: string;
-  cityName: string;
-  postalZone: string;
-  countryIdentificationCode: string;
-  partyTaxSchemeCompanyID: string;
-  partyTaxSchemeTaxSchemeId: string;
-  partyLegalEntityRegistrationName: string;
-  client_email: string;
-  phoneNumber: string;
-  invoices?: Invoice[];
-  account: Account;
-  userId: string;
+    id: string;
+    streetName: string;
+    buildingNumber: string;
+    citySubdivisionName: string;
+    cityName: string;
+    postalZone: string;
+    countryIdentificationCode: string;
+    partyTaxSchemeCompanyID: string;
+    partyTaxSchemeTaxSchemeId: string;
+    partyLegalEntityRegistrationName: string;
+    client_email: string;
+    phoneNumber: string;
+    invoices?: Invoice[];
+    account: Account;
+    userId: string;
 };
 
 export type Invoice = {
-  id: string;
-  account: Account;
-  client: Client;
-  services: Service[];
-  status: string;
-  invoiceDate: string;
-  deliveryDate: string;
-  invoice_type: string;
-  currency: string;
-  tax_category: string;
-  payment_means: string;
-  note: string;
+    id: string;
+    account: Account;
+    client: Client;
+    services: Service[];
+    status: string;
+    invoice_name: string
+    invoiceDate: string;
+    deliveryDate: string;
+    invoice_type: string;
+    currency: string;
+    tax_category: string;
+    tax_scheme: string;       //eg VAT
+    payment_means: string;
+    note: string;
 
-  discount: number;
-  tax: number;
-  custom_id: string;
-  subtotal: number;
-  total: number;
+    invoice_id: string;
+    uuid: string
+    invoice_type_code_value: string;
+    invoice_type_code_name: string;
+    allowance_charge_indicator: boolean;
+    allowance_charge_reason: string;
+    allowance_charge_amount_value: string;
+
+    zatca_qr_code: string;
+
+    discount_percentage: number;
+    total_discount_amount: number;
+    tax_percentage: number;
+    total_tax_amount: number;
+    subtotal: number;
+    total: number;
 };
 
 export type Service = {
-  title: string;
-  description: string;
-  unitPrice: number;
-  quantity: number;
-  discount: number;
-  totalPrice: number;
+    name: string;
+    description: string;
+    unitPrice: number;
+    unitCode: string;
+    quantity: number;
+    item_discount_percentage: number;
+    item_discount_amount: number;
+    totalPrice: number;
 };
 
 export type MyOrgProfile = {
-  id: string;
-  partyId: string;
-  schemeId: string;
-  streetName: string;
-  buildingNumber: string;
-  citySubdivisionName: string;
-  cityName: string;
-  postalZone: string;
-  countryIdentificationCode: string;
-  partyTaxSchemeCompanyID: string;
-  partyTaxSchemeTaxSchemeId: string;
-  partyLegalEntityRegistrationName: string;
-  email: string;
-  phoneNumber: string;
-  logo: string;
+    id: string;
+    partyId: string;
+    schemeId: string;
+    streetName: string;
+    buildingNumber: string;
+    citySubdivisionName: string;
+    cityName: string;
+    postalZone: string;
+    countryIdentificationCode: string;
+    partyTaxSchemeCompanyID: string;
+    partyTaxSchemeTaxSchemeId: string;
+    partyLegalEntityRegistrationName: string;
+    email: string;
+    phoneNumber: string;
+    logo: string;
 };
 
 export type User = {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  address: string;
-  phone_number: string;
-  provider: string;
-  confirmed: boolean;
-  blocked: boolean;
-  createdDate: string;
-  updatedDate: string;
+    id: string;
+    name: string;
+    email: string;
+    avatar: string;
+    address: string;
+    phone_number: string;
+    provider: string;
+    confirmed: boolean;
+    blocked: boolean;
+    createdDate: string;
+    updatedDate: string;
 };
 
 export type IEvent = {
-  id: number;
-  event_name: string;
-  phone: number;
-  date: string;
-  agenda: string;
-  status: "new" | "done" | "cancelled";
+    id: number;
+    event_name: string;
+    phone: number;
+    date: string;
+    agenda: string;
+    status: "new" | "done" | "cancelled";
 }
 export type ClientMedia = {
-  id: number;
-  client: Client;
-  phone: number;
-  date: string;
-  agenda: string;
-  status: "new" | "done" | "cancelled";
+    id: number;
+    client: Client;
+    phone: number;
+    date: string;
+    agenda: string;
+    status: "new" | "done" | "cancelled";
 }
 
 
 export type Media = {
-  id: string;
-  name: string;
-  alternativeText: any;
-  caption: any;
-  width: number;
-  height: number;
-  formats: any;
-  hash: string;
-  ext: string;
-  mime: string;
-  size: number;
-  url: string;
-  previewUrl: any;
-  provider: string;
-  provider_metadata: any;
-  createdDate: string;
-  updatedDate: string;
+    id: string;
+    name: string;
+    alternativeText: any;
+    caption: any;
+    width: number;
+    height: number;
+    formats: any;
+    hash: string;
+    ext: string;
+    mime: string;
+    size: number;
+    url: string;
+    previewUrl: any;
+    provider: string;
+    provider_metadata: any;
+    createdDate: string;
+    updatedDate: string;
 };
 
 export type SimplifiedInvoice = {
-  id: string;
-  invoice_name: string;
-  invoiceDate: string;
-  total: number;
-  client: Client;
-  account: Account;
-  note?: string;
-  currency: string;
-  status: string;
-  // Add any other fields specific to simplified invoices
+    id: string;
+    invoice_name: string;
+    invoiceDate: string;
+    total: number;
+    client: Client;
+    account: Account;
+    note?: string;
+    currency: string;
+    status: string;
+    // Add any other fields specific to simplified invoices
 };
 
 export type StandardInvoice = {
-  id: string;
-  invoice_name: string;
-  invoiceDate: string;
-  discount: number;
-  tax: number;
-  custom_id: string;
-  services: Service[];
-  subtotal: number;
-  total: number;
-  createdDate: string;
-  updatedDate: string;
-  account: Account;
-  client: Client;
-  note: string;
-  currency: string;
-  status: string;
-  // Add any other fields specific to standard invoices
+    id: string;
+    invoice_name: string;
+    invoiceDate: string;
+    discount: number;
+    tax: number;
+    custom_id: string;
+    services: Service[];
+    subtotal: number;
+    total: number;
+    createdDate: string;
+    updatedDate: string;
+    account: Account;
+    client: Client;
+    note: string;
+    currency: string;
+    status: string;
+    // Add any other fields specific to standard invoices
 };

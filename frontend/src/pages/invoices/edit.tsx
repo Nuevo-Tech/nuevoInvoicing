@@ -291,7 +291,7 @@ export const InvoicesPageEdit = () => {
     };
 
 
-    const [tax, setTax] = useState<number>(queryResult?.data?.data?.tax || 0);
+    const [tax, setTax] = useState<number>(0);
 
     const subtotal = services.reduce(
         (acc, service) =>
@@ -525,6 +525,16 @@ export const InvoicesPageEdit = () => {
                                 />
                             </Form.Item>
                         </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Invoice Name"
+                                name="invoice_name"
+                                rules={[{required: true}]}
+                            >
+                                <Input
+                                    placeholder="Enter invoice Name"></Input>
+                            </Form.Item>
+                        </Col>
                     </Row>
 
                     <Form.Item
@@ -553,7 +563,7 @@ export const InvoicesPageEdit = () => {
                                         xs={{span: 7}}
                                         className={styles.serviceHeaderColumn}
                                     >
-                                        Title
+                                        Name
                                         <Divider
                                             type="vertical"
                                             className={styles.serviceHeaderDivider}
@@ -617,14 +627,14 @@ export const InvoicesPageEdit = () => {
                                                             >
                                                                 <Input
                                                                     placeholder="Title"
-                                                                    value={service.title}
+                                                                    value={service.name}
                                                                     onChange={(e) => {
                                                                         setServices((prev) =>
                                                                             prev.map((item, i) =>
                                                                                 i === index
                                                                                     ? {
                                                                                         ...item,
-                                                                                        title: e.target.value
+                                                                                        name: e.target.value
                                                                                     }
                                                                                     : item
                                                                             )
@@ -743,8 +753,9 @@ export const InvoicesPageEdit = () => {
                                             setServices((prev) => [
                                                 ...prev,
                                                 {
-                                                    title: "",
+                                                    name: "",
                                                     unitPrice: 0,
+                                                    unitCode: "",
                                                     quantity: 0,
                                                     discount: 0,
                                                     totalPrice: 0,
@@ -791,15 +802,22 @@ export const InvoicesPageEdit = () => {
                                 <Typography.Text className={styles.labelTotal}>
                                     Tax:
                                 </Typography.Text>
-                                <InputNumber
-                                    addonAfter="%"
-                                    style={{width: "96px"}}
-                                    value={tax}
-                                    min={0}
-                                    onChange={(value) => {
-                                        setTax(value || 0);
-                                    }}
-                                />
+                                <Form.Item
+                                    name="tax"
+                                    label="VAT"
+                                    labelCol={{ span: 8 }}
+                                    wrapperCol={{ span: 16 }}
+                                    style={{ display: "flex", alignItems: "center" }}
+                                >
+                                    <InputNumber
+                                        addonAfter="%"
+                                        style={{ width: "96px" }}
+                                        min={0}
+                                        onChange={(value) => {
+                                            setTax(value || 0);
+                                        }}
+                                    />
+                                </Form.Item>
                             </Flex>
                             <Divider
                                 style={{

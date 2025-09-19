@@ -158,13 +158,13 @@ export const InvoicesPageShow = () => {
                           fontWeight: 700,
                         }}
                       >
-                        {invoice?.client?.client_name}
+                        {invoice?.client?.partyLegalEntityRegistrationName}
                       </Typography.Text>
                       <Typography.Text>
-                        {invoice?.client?.address}
+                        {invoice?.client?.cityName}
                       </Typography.Text>
                       <Typography.Text>
-                        {invoice?.client?.phone}
+                        {invoice?.client?.phoneNumber}
                       </Typography.Text>
                     </Flex>
                   </Flex>

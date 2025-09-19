@@ -544,7 +544,7 @@
 //                               >
 //                                 <Input
 //                                   placeholder="Title"
-//                                   value={service.title}
+//                                   value={service.name}
 //                                   onChange={(e) => {
 //                                     setServices((prev) =>
 //                                       prev.map((item, i) =>
@@ -664,8 +664,9 @@
 //                             setServices((prev) => [
 //                               ...prev,
 //                               {
-//                                 title: "",
+//                                 name: "",
 //                                 unitPrice: 0,
+//                                   unitCode:"",
 //                                 quantity: 0,
 //                                 discount: 0,
 //                                 totalPrice: 0,
