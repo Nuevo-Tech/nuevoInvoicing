@@ -88,10 +88,14 @@ export const InvoicesPageEdit = () => {
     ];
 
     const statusOptions = [
-        {value: "Draft", label: "Draft", color: "blue"},
-        {value: "NotPaid", label: "NotPaid", color: "red"},
+        {value: "Draft", label: "Draft", color: "orange"},
+        {value: "Validated W", label: "Valiadted W", color: "cyan"},
+        {value: "Validated", label: "Validated", color: "green"},
+        {value: "ValidationFailed", label: "ValidationFailed", color: "red"},
         {value: "Paid", label: "Paid", color: "green"},
-        {value: "Refunded", label: "Refunded", color: "orange"},
+        {value: "ZatcaReported W", label: "ZatcaReported W", color: "cyan"},
+        {value: "ZatcaReported", label: "ZatcaReported", color: "green"},
+        {value: "ZatcaReportingFailed", label: "ZatcaReportingFailed", color: "red"},
     ];
 
     const defaultCurrencySymbol = "SAR ﷼";
@@ -161,12 +165,13 @@ export const InvoicesPageEdit = () => {
     const [selectInvoiceType, setSelectedInvoiceType] = useState(defaultInvoiceType);
     const invoiceTypeOptions = [
         {value: "StandardInvoice", label: "Standard Invoice", color: "purple"},
-        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "cyan"},
-        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "magenta"},
+        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "orange"},
+        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "blue"},
 
-        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "blue"},
-        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "green"},
+        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "green"},
         {value: "SimplifiedInvoiceDebitNote", label: "Simplified Debit Note", color: "orange"},
+        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "blue"},
+
     ];
 
     const handleInvoiceTypeChange = (value: React.SetStateAction<string>) => {
@@ -318,6 +323,7 @@ export const InvoicesPageEdit = () => {
                 priceBeforeDiscount *
                 ((100 - currentService.item_discount_percentage) / 100);
 
+            currentService.price_without_discount = priceBeforeDiscount;
             currentService.item_discount_amount = priceBeforeDiscount - currentService.totalPrice;
 
             return prev.map((item, i) => (i === index ? currentService : item));
@@ -561,7 +567,7 @@ export const InvoicesPageEdit = () => {
                             level={4}
                             style={{marginBottom: "32px", fontWeight: 400}}
                         >
-                            Products / Services
+                            Items / Services
                         </Typography.Title>
                         <div className={styles.serviceTableWrapper}>
                             <div className={styles.serviceTableContainer}>
@@ -635,6 +641,7 @@ export const InvoicesPageEdit = () => {
                                                                 <Input
                                                                     placeholder="Title"
                                                                     value={service.name}
+                                                                    required={true}
                                                                     onChange={(e) => {
                                                                         setServices((prev) =>
                                                                             prev.map((item, i) =>
@@ -764,6 +771,7 @@ export const InvoicesPageEdit = () => {
                                                     unitPrice: 0,
                                                     unitCode: "",
                                                     quantity: 0,
+                                                    price_without_discount: 0,
                                                     item_discount_percentage: 0,
                                                     item_discount_amount: 0,
                                                     totalPrice: 0,
@@ -813,13 +821,13 @@ export const InvoicesPageEdit = () => {
                                 <Form.Item
                                     name="tax"
                                     label="VAT"
-                                    labelCol={{ span: 8 }}
-                                    wrapperCol={{ span: 16 }}
-                                    style={{ display: "flex", alignItems: "center" }}
+                                    labelCol={{span: 8}}
+                                    wrapperCol={{span: 16}}
+                                    style={{display: "flex", alignItems: "center"}}
                                 >
                                     <InputNumber
                                         addonAfter="%"
-                                        style={{ width: "96px" }}
+                                        style={{width: "96px"}}
                                         min={0}
                                         onChange={(value) => {
                                             setTax(value || 0);

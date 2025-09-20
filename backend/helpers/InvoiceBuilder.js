@@ -57,10 +57,10 @@ class InvoiceBuilder {
         const totalTaxAmount = reqBody.subtotal * (reqBody.tax_percentage / 100);
 
         const allowanceCharges = [];
-
+        let allowanceCharge = null;
         // Discount
         if (reqBody.total_discount_amount >= 0) {
-            allowanceCharges.push({
+            allowanceCharge = {
                 chargeIndicator: false,
                 allowanceChargeReason: "discount",
                 amount: {
@@ -69,11 +69,12 @@ class InvoiceBuilder {
                 },
                 taxCategory: {
                     id: reqBody.tax_category,
-                    percent: reqBody.tax_percentage,
+                    percent: reqBody.tax_percentage.toString(),
                     taxScheme: {id: taxScheme},
-                },
-            });
+                }
+            }
         }
+
 
         // Surcharge
         // if (reqBody.total_surcharge_amount > 0) {
@@ -96,13 +97,13 @@ class InvoiceBuilder {
         const taxTotal = [
             {
                 taxAmount: {
-                    value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.6"
+                    value: totalTaxAmount.toFixed(1), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
             },
             {
                 taxAmount: {
-                    value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.6"
+                    value: totalTaxAmount.toFixed(1), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxSubtotal: {
@@ -116,7 +117,7 @@ class InvoiceBuilder {
                     },
                     taxCategory: {
                         id: reqBody.tax_category, // e.g. "S"
-                        percent: reqBody.tax_percentage, // e.g. "15.00"
+                        percent: reqBody.tax_percentage.toFixed(2), // e.g. "15.00"
                         taxScheme: {
                             id: taxScheme,
                         },
@@ -134,7 +135,11 @@ class InvoiceBuilder {
         }, 0);
 
         // ✅ total without discount
-        const totalAfterDiscountAndSurcharge = reqBody.subtotal - reqBody.total_discount_amount + reqBody.total_surcharge_amount;
+        const subtotal = Number(reqBody.subtotal || 0);
+        const totalDiscount = Number(reqBody.total_discount_amount || 0);
+        const totalSurcharge = Number(reqBody.total_surcharge_amount || 0);
+
+        const totalAfterDiscountAndSurcharge = totalWithoutDiscount - totalDiscount + totalSurcharge;
 
         // Build legalMonetaryTotal
         const legalMonetaryTotal = {
@@ -174,13 +179,14 @@ class InvoiceBuilder {
             issueDate: Helper.formatDateToZatca(reqBody.invoiceDate),
             issueTime: Helper.getTimeNowZatca(),
             "invoiceTypeCode": typeCodeOfInvoice,
-            "delivery.actualDeliveryDate": Helper.formatDateToZatca(reqBody.deliveryDate),
-            "paymentMeans.paymentMeansCode": reqBody.payment_means,
-            allowanceCharge: allowanceCharges,
-            taxTotal: taxTotal,
-            legalMonetaryTotal: legalMonetaryTotal,
             accountingSupplierParty: supplierDetails,
             accountingCustomerParty: customerDetails,
+            "delivery.actualDeliveryDate": Helper.formatDateToZatca(reqBody.deliveryDate),
+            "paymentMeans.paymentMeansCode": reqBody.payment_means,
+            allowanceCharge: allowanceCharge,
+            taxTotal: taxTotal,
+            legalMonetaryTotal: legalMonetaryTotal,
+            invoiceLine: invoiceLines
         });
         return this.build();
     }

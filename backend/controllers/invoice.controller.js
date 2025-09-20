@@ -158,6 +158,7 @@ const createInvoice = async (req, res) => {
 
         if (
             !account ||
+            !services.name ||
             !invoice_name ||
             !client ||
             !invoiceDate ||

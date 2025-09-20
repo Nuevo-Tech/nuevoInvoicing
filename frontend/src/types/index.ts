@@ -59,7 +59,7 @@ export type Invoice = {
     invoice_type: string;
     currency: string;
     tax_category: string;
-    tax_scheme: string;       //eg VAT
+    tax_scheme_id: string;     //eg VAT
     payment_means: string;
     note: string;
 
@@ -75,10 +75,13 @@ export type Invoice = {
 
     discount_percentage: number;
     total_discount_amount: number;
+    surcharge_percentage: number;
+    total_surcharge_amount: number;
     tax_percentage: number;
     total_tax_amount: number;
     subtotal: number;
     total: number;
+    prepaid_amount: number;
 };
 
 export type Service = {
@@ -87,6 +90,7 @@ export type Service = {
     unitPrice: number;
     unitCode: string;
     quantity: number;
+    price_without_discount: number;
     item_discount_percentage: number;
     item_discount_amount: number;
     totalPrice: number;

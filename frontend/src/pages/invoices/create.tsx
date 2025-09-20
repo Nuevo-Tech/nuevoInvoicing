@@ -41,8 +41,9 @@ export const InvoicesPageCreate = () => {
         {
             name: "",
             unitPrice: 0,
-            unitCode: "",
+            unitCode: "PCE",
             quantity: 0,
+            price_without_discount: 0,
             item_discount_percentage: 0,
             item_discount_amount: 0,
             totalPrice: 0,
@@ -87,10 +88,14 @@ export const InvoicesPageCreate = () => {
     ];
 
     const statusOptions = [
-        {value: "Draft", label: "Draft", color: "blue"},
-        {value: "NotPaid", label: "NotPaid", color: "red"},
+        {value: "Draft", label: "Draft", color: "orange"},
+        {value: "Validated W", label: "Valiadted W", color: "cyan"},
+        {value: "Validated", label: "Validated", color: "green"},
+        {value: "ValidationFailed", label: "ValidationFailed", color: "red"},
         {value: "Paid", label: "Paid", color: "green"},
-        {value: "Refunded", label: "Refunded", color: "orange"},
+        {value: "ZatcaReported W", label: "ZatcaReported W", color: "cyan"},
+        {value: "ZatcaReported", label: "ZatcaReported", color: "green"},
+        {value: "ZatcaReportingFailed", label: "ZatcaReportingFailed", color: "red"},
     ];
 
     const defaultCurrencySymbol = "SAR ﷼";
@@ -155,50 +160,6 @@ export const InvoicesPageCreate = () => {
         }
         setSelectedStatus(status);
     };
-
-    const defaultInvoiceType = "StandardInvoice";
-    const [selectInvoiceType, setSelectedInvoiceType] = useState(defaultInvoiceType);
-    const invoiceTypeOptions = [
-        {value: "StandardInvoice", label: "Standard Invoice", color: "purple"},
-        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "cyan"},
-        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "magenta"},
-
-        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "blue"},
-        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "green"},
-        {value: "SimplifiedInvoiceDebitNote", label: "Simplified Debit Note", color: "orange"},
-    ];
-
-    const handleInvoiceTypeChange = (value: React.SetStateAction<string>) => {
-        let invoiceType = "";
-
-        switch (value) {
-            case "Simplified Invoice":
-                invoiceType = "SimplifiedInvoice";
-                break;
-            case "Simplified Invoice CreditNote":
-                invoiceType = "SimplifiedInvoiceCreditNote";
-                break;
-            case "Simplified Invoice DebitNote":
-                invoiceType = "SimplifiedInvoiceDebitNote";
-                break;
-
-            case "Standard Invoice":
-                invoiceType = "StandardInvoice";
-                break;
-            case "Standard Invoice CreditNote":
-                invoiceType = "StandardInvoiceCreditNote";
-                break;
-            case "Standard Invoice DebitNote":
-                invoiceType = "StandardInvoiceDebitNote";
-                break;
-
-            default:
-                invoiceType = defaultInvoiceType; // fallback
-        }
-
-        setSelectedInvoiceType(invoiceType);
-    };
-
 
     const defaultTaxCategory = "S";
     const [selectTaxCategory, setSelectedTaxCategory] = useState(defaultTaxCategory);
@@ -303,6 +264,7 @@ export const InvoicesPageCreate = () => {
                 priceBeforeDiscount *
                 ((100 - currentService.item_discount_percentage) / 100);
 
+            currentService.price_without_discount = priceBeforeDiscount;
             currentService.item_discount_amount = priceBeforeDiscount - currentService.totalPrice;
             return prev.map((item, i) => (i === index ? currentService : item));
         });
@@ -331,47 +293,47 @@ export const InvoicesPageCreate = () => {
     };
 
     const typeOptions = [
-        {label: "Standard", value: "standard", icon: <FileTextOutlined style={{fontSize: 32, color: '#722ed1'}}/>},
-        {label: "Simplified", value: "simplified", icon: <FileAddOutlined style={{fontSize: 32, color: '#52c41a'}}/>},
+        {label: "Standard", value: "Standard", icon: <FileTextOutlined style={{fontSize: 32, color: '#722ed1'}}/>},
+        {label: "Simplified", value: "Simplified", icon: <FileAddOutlined style={{fontSize: 32, color: '#52c41a'}}/>},
     ];
     const subTypeOptions = {
         standard: [
             {
                 label: "Standard",
-                value: "standard",
-                desc: "Regular Standard Invoice",
+                value: "StandardInvoice",
+                desc: "",
                 icon: <FileTextOutlined style={{fontSize: 28, color: '#722ed1'}}/>
             },
             {
                 label: "Standard Debit Note",
-                value: "standard_debit",
-                desc: "Debit Note for Standard Invoice",
+                value: "StandardInvoiceDebitNote",
+                desc: "",
                 icon: <FileAddOutlined style={{fontSize: 28, color: '#faad14'}}/>
             },
             {
                 label: "Standard Credit Note",
-                value: "standard_credit",
-                desc: "Credit Note for Standard Invoice",
+                value: "StandardInvoiceCreditNote",
+                desc: "",
                 icon: <FileDoneOutlined style={{fontSize: 28, color: '#1890ff'}}/>
             },
         ],
         simplified: [
             {
                 label: "Simplified",
-                value: "simplified",
-                desc: "Regular Simplified Invoice",
+                value: "SimplifiedInvoice",
+                desc: "",
                 icon: <FileTextOutlined style={{fontSize: 28, color: '#52c41a'}}/>
             },
             {
                 label: "Simplified Debit Note",
-                value: "simplified_debit",
-                desc: "Debit Note for Simplified Invoice",
+                value: "SimplifiedInvoiceDebitNote",
+                desc: "",
                 icon: <FileAddOutlined style={{fontSize: 28, color: '#faad14'}}/>
             },
             {
                 label: "Simplified Credit Note",
-                value: "simplified_credit",
-                desc: "Credit Note for Simplified Invoice",
+                value: "SimplifiedInvoiceCreditNote",
+                desc: "",
                 icon: <FileDoneOutlined style={{fontSize: 28, color: '#1890ff'}}/>
             },
         ],
@@ -379,12 +341,57 @@ export const InvoicesPageCreate = () => {
 
     const [showTypeModal, setShowTypeModal] = useState(true);
     const location = useLocation();
-    const initialType = location.state?.invoiceType || null;
-    const initialSubType = location.state?.invoiceSubType || null;
+    const initialType = "StandardInvoice";
+    const initialSubType = "StandardInvoice";
     const [invoiceType, setInvoiceType] = useState<string | null>(initialType);
     const [invoiceSubType, setInvoiceSubType] = useState<string | null>(initialSubType);
     const [step, setStep] = useState(0);
     const {token} = theme.useToken();
+
+
+    // const defaultInvoiceType = "StandardInvoice";
+    const [selectInvoiceType, setSelectedInvoiceType] = useState(invoiceType);
+    const invoiceTypeOptions = [
+        {value: "StandardInvoice", label: "Standard Invoice", color: "purple"},
+        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "orange"},
+        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "blue"},
+
+
+        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "green"},
+        {value: "SimplifiedInvoiceDebitNote", label: "Simplified Debit Note", color: "orange"},
+        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "blue"},
+
+    ];
+
+    const handleInvoiceTypeChange = (value: React.SetStateAction<string>) => {
+        let invoiceType = "";
+
+        switch (value) {
+            case "Simplified Invoice":
+                invoiceType = "SimplifiedInvoice";
+                break;
+            case "Simplified Invoice CreditNote":
+                invoiceType = "SimplifiedInvoiceCreditNote";
+                break;
+            case "Simplified Invoice DebitNote":
+                invoiceType = "SimplifiedInvoiceDebitNote";
+                break;
+
+            case "Standard Invoice":
+                invoiceType = "StandardInvoice";
+                break;
+            case "Standard Invoice CreditNote":
+                invoiceType = "StandardInvoiceCreditNote";
+                break;
+            case "Standard Invoice DebitNote":
+                invoiceType = "StandardInvoiceDebitNote";
+                break;
+
+            default:
+                invoiceType = invoiceSubType || "StandardInvoice"; // fallback
+        }
+        setSelectedInvoiceType(invoiceSubType);
+    };
 
     return (
         <>
@@ -408,7 +415,7 @@ export const InvoicesPageCreate = () => {
                 {/* Title */}
                 <Title
                     level={4}
-                    style={{textAlign: "center", marginBottom: token.marginLG, color: token.colorPrimary}}
+                    style={{textAlign: "center", marginBottom: token.marginLG}}
                 >
                     {step === 0 ? "Select Invoice Type" : "Select Invoice Sub-Type"}
                 </Title>
@@ -464,7 +471,7 @@ export const InvoicesPageCreate = () => {
                 {step === 1 && invoiceType && (
                     <>
                         <Space wrap={true} size="large" style={{width: "100%", marginBottom: token.marginMD}}>
-                            {subTypeOptions[invoiceType as "standard" | "simplified"].map((opt) => (
+                            {subTypeOptions[invoiceType.toLowerCase() as "standard" | "simplified"].map((opt) => (
                                 <Card
                                     key={opt.value}
                                     hoverable
@@ -521,7 +528,7 @@ export const InvoicesPageCreate = () => {
                     <Form
                         {...formProps}
                         initialValues={{
-                            status: defaultStatus, currency: defaultCurrency, invoice_type: defaultInvoiceType,
+                            status: defaultStatus, currency: defaultCurrency, invoice_type: invoiceSubType,
                             tax_category: defaultTaxCategory, payment_means: defaultPaymentMeans
                         }}
                         onFinish={(values) => onFinishHandler(values as Invoice)}
@@ -721,7 +728,7 @@ export const InvoicesPageCreate = () => {
                                         level={4}
                                         style={{marginBottom: "32px", fontWeight: 400}}
                                     >
-                                        Products / Services
+                                        Items / Services
                                     </Typography.Title>
                                     <div className={styles.serviceTableWrapper}>
                                         <div className={styles.serviceTableContainer}>
@@ -789,6 +796,7 @@ export const InvoicesPageCreate = () => {
                                                             >
                                                                 <Input
                                                                     placeholder="Name"
+                                                                    required={true}
                                                                     value={service.name}
                                                                     onChange={(e) => {
                                                                         setServices((prev) =>
@@ -847,6 +855,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Discount Percentage"
                                                                     min={0}
+                                                                    max={100}
                                                                     value={service.item_discount_percentage}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -911,8 +920,9 @@ export const InvoicesPageCreate = () => {
                                                             {
                                                                 name: "",
                                                                 unitPrice: 0,
-                                                                unitCode: "",
+                                                                unitCode: "PCE",
                                                                 quantity: 0,
+                                                                price_without_discount: 0,
                                                                 item_discount_percentage: 0,
                                                                 item_discount_amount: 0,
                                                                 totalPrice: 0,

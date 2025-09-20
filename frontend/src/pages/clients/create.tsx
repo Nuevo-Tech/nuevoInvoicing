@@ -59,7 +59,7 @@ export const ClientsPageCreate = () => {
             width={"80%"}  // takes 80% of viewport
             style={{maxWidth: 1000}}
             okButtonProps={{form: "create-client-form", htmlType: "submit"}}
-            title="Add new client"
+            title="Add new Customer"
             open
             onCancel={() => {
                 go({
@@ -101,10 +101,10 @@ export const ClientsPageCreate = () => {
                     <Col xs={24} sm={6}>
                         <Form.Item
                             name="partyLegalEntityRegistrationName"
-                            label="Client Registration Name"
+                            label="Customer Registration Name"
                             rules={[{required: true}]}
                         >
-                            <Input placeholder="Please enter client title"/>
+                            <Input placeholder="Please enter Customer Name"/>
                         </Form.Item>
                     </Col>
 
