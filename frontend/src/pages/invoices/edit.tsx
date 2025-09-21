@@ -146,14 +146,26 @@ export const InvoicesPageEdit = () => {
             case "Draft":
                 status = "Draft";
                 break;
-            case "NotPaid":
-                status = "NotPaid";
+            case "Validated W":
+                status = "Validated W";
+                break;
+            case "Validated":
+                status = "Validated";
+                break;
+            case "ValidationFailed":
+                status = "ValidationFailed";
                 break;
             case "Paid":
                 status = "Paid";
                 break;
-            case "Refunded":
-                status = "Refunded";
+            case "ZatcaReported W":
+                status = "ZatcaReported W";
+                break;
+            case "ZatcaReported":
+                status = "ZatcaReported";
+                break;
+            case "ZatcaReportingFailed":
+                status = "ZatcaReportingFailed";
                 break;
             default:
                 status = defaultStatus;
@@ -416,6 +428,7 @@ export const InvoicesPageEdit = () => {
 
                             >
                                 <Select
+                                    disabled
                                     placeholder="Select Status"
                                     onChange={handleStatusChange}
                                     options={statusOptions.map((opt) => ({
@@ -819,7 +832,7 @@ export const InvoicesPageEdit = () => {
                                     Tax:
                                 </Typography.Text>
                                 <Form.Item
-                                    name="tax"
+                                    name="tax_percentage"
                                     label="VAT"
                                     labelCol={{span: 8}}
                                     wrapperCol={{span: 16}}

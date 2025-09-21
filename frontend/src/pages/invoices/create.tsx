@@ -146,14 +146,26 @@ export const InvoicesPageCreate = () => {
             case "Draft":
                 status = "Draft";
                 break;
-            case "NotPaid":
-                status = "NotPaid";
+            case "Validated W":
+                status = "Validated W";
+                break;
+            case "Validated":
+                status = "Validated";
+                break;
+            case "ValidationFailed":
+                status = "ValidationFailed";
                 break;
             case "Paid":
                 status = "Paid";
                 break;
-            case "Refunded":
-                status = "Refunded";
+            case "ZatcaReported W":
+                status = "ZatcaReported W";
+                break;
+            case "ZatcaReported":
+                status = "ZatcaReported";
+                break;
+            case "ZatcaReportingFailed":
+                status = "ZatcaReportingFailed";
                 break;
             default:
                 status = defaultStatus;
@@ -581,6 +593,7 @@ export const InvoicesPageCreate = () => {
                                             rules={[{required: true}]}
                                         >
                                             <Select
+                                                disabled
                                                 placeholder="Select Status"
                                                 onChange={handleStatusChange}
                                                 options={statusOptions.map((opt) => ({
