@@ -318,7 +318,7 @@ const updateInvoice = async (req, res) => {
 
         const jsonPayload = await builder.createInvoiceFromRequest(req.body, "new", clientDoc, myOrgProfile);
 
-        const {zatcaStatus, zatcaData} = await createInvoiceZatcaBackend(jsonPayload);
+        const {zatcaStatus, zatcaData} = await updateInvoiceZatcaBackend(jsonPayload);
         if (![200, 202].includes(zatcaStatus)) {
             return res.status(500).json({data: zatcaData, message: zatcaData?.message || "Failed at backend"});
         }
