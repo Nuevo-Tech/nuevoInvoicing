@@ -14,7 +14,8 @@ const InvoiceSchema = new mongoose.Schema({
         creator: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
         status: {type: String, required: true},
         invoice_name: {type: String, required: true},
-        invoiceDate: {type: String, required: true}, // can be Date if you want
+        invoiceDate: {type: String, required: true},
+        invoiceTime: {type: String, required: true},// can be Date if you want
         deliveryDate: {type: String},
         invoice_type: {type: String, required: true},
         currency: {type: String, required: true},
@@ -31,7 +32,7 @@ const InvoiceSchema = new mongoose.Schema({
         allowance_charge_reason: {type: String},
         allowance_charge_amount_value: {type: String},
 
-        zatca_qr_code: {type: String},
+        zatca_qr_code: {type: String, required: true},
         discount_percentage: {type: Number, default: 0},
         total_discount_amount: {type: Number, default: 0},
         surcharge_percentage: {type: Number, default: 0},

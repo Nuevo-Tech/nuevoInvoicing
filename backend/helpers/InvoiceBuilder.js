@@ -40,14 +40,14 @@ class InvoiceBuilder {
         return this.invoice;
     }
 
-    async createInvoiceFromRequest(reqBody, flag, Client, MyOrgProfile) {
+    async createInvoiceFromRequest(reqBody, flag, Client, MyOrgProfile, session) {
         // let invoiceDoc = await Invoice.findOne({ uuid: reqBody.uuid });
         //
         // if (!invoiceDoc) {
         //     invoiceDoc = new Invoice(builtInvoice);
         // }
         if (flag === "new") {
-            const customInvoiceId = await generateInvoiceId(Client);
+            const customInvoiceId = await generateInvoiceId(Client, session);
             this.setField("id", customInvoiceId);
             this.setField("uuid", Helper.generateUUID());
         }
