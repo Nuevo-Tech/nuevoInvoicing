@@ -67,6 +67,8 @@ import {BASE_URL_API_V1} from "./utils/urls";
 import AdminPage from "./pages/admin/index";
 import AdminDashboard from "./pages/admin/dashboard";
 import OnboardingClient from "./pages/admin/onboardingclient";
+import ListClients from "./pages/admin/listClients";
+import EditClient from "./pages/admin/editClient";
 
 const App: React.FC = () => {
     const {isLoading, user, logout, getIdTokenClaims} = useAuth0();
@@ -217,6 +219,8 @@ const App: React.FC = () => {
                                 <Route path="/admin" element={<AdminPage />} />
                                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                                 <Route path="/admin/onboardingclient" element={<OnboardingClient />} />
+                                <Route path="/admin/listClients" element={<ListClients />} />
+                                <Route path="/admin/editClient/:id" element={<EditClient />} />
 
                                 <Route
                                     path="/accounts"
