@@ -88,10 +88,14 @@ export const InvoicesPageEdit = () => {
     ];
 
     const statusOptions = [
-        {value: "Draft", label: "Draft", color: "blue"},
-        {value: "NotPaid", label: "NotPaid", color: "red"},
+        {value: "Draft", label: "Draft", color: "orange"},
+        {value: "Validated W", label: "Valiadted W", color: "cyan"},
+        {value: "Validated", label: "Validated", color: "green"},
+        {value: "ValidationFailed", label: "ValidationFailed", color: "red"},
         {value: "Paid", label: "Paid", color: "green"},
-        {value: "Refunded", label: "Refunded", color: "orange"},
+        {value: "ZatcaReported W", label: "ZatcaReported W", color: "cyan"},
+        {value: "ZatcaReported", label: "ZatcaReported", color: "green"},
+        {value: "ZatcaReportingFailed", label: "ZatcaReportingFailed", color: "red"},
     ];
 
     const defaultCurrencySymbol = "SAR ﷼";
@@ -161,12 +165,13 @@ export const InvoicesPageEdit = () => {
     const [selectInvoiceType, setSelectedInvoiceType] = useState(defaultInvoiceType);
     const invoiceTypeOptions = [
         {value: "StandardInvoice", label: "Standard Invoice", color: "purple"},
-        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "cyan"},
-        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "magenta"},
+        {value: "StandardInvoiceDebitNote", label: "Standard Debit Note", color: "orange"},
+        {value: "StandardInvoiceCreditNote", label: "Standard Credit Note", color: "blue"},
 
-        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "blue"},
-        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "green"},
+        {value: "SimplifiedInvoice", label: "Simplified Invoice", color: "green"},
         {value: "SimplifiedInvoiceDebitNote", label: "Simplified Debit Note", color: "orange"},
+        {value: "SimplifiedInvoiceCreditNote", label: "Simplified Credit Note", color: "blue"},
+
     ];
 
     const handleInvoiceTypeChange = (value: React.SetStateAction<string>) => {
@@ -291,28 +296,35 @@ export const InvoicesPageEdit = () => {
     };
 
 
-    const [tax, setTax] = useState<number>(queryResult?.data?.data?.tax || 0);
+    const [tax, setTax] = useState<number>(0);
+
+    const totalDiscountAmount = services.reduce(
+        (acc, service) =>
+            acc + service.item_discount_amount, 0);
 
     const subtotal = services.reduce(
         (acc, service) =>
             acc +
-            (service.unitPrice * service.quantity * (100 - service.discount)) / 100,
+            (service.unitPrice * service.quantity * (100 - service.item_discount_percentage)) / 100,
         0
     );
     const total = subtotal + (subtotal * tax) / 100;
 
     const handleServiceNumbersChange = (
         index: number,
-        key: "quantity" | "discount" | "unitPrice",
+        key: "quantity" | "item_discount_percentage" | "unitPrice",
         value: number
     ) => {
         setServices((prev) => {
             const currentService = {...prev[index]};
             currentService[key] = value;
+            let priceBeforeDiscount = currentService.unitPrice * currentService.quantity;
             currentService.totalPrice =
-                currentService.unitPrice *
-                currentService.quantity *
-                ((100 - currentService.discount) / 100);
+                priceBeforeDiscount *
+                ((100 - currentService.item_discount_percentage) / 100);
+
+            currentService.price_without_discount = priceBeforeDiscount;
+            currentService.item_discount_amount = priceBeforeDiscount - currentService.totalPrice;
 
             return prev.map((item, i) => (i === index ? currentService : item));
         });
@@ -347,8 +359,9 @@ export const InvoicesPageEdit = () => {
                         userId: userId,
                         services: services,
                         subtotal: subtotal,
+                        tax_percentage: tax,
+                        total_discount_amount: totalDiscountAmount,
                         total: total,
-                        tax: tax,
                     });
                 }}
             >
@@ -525,6 +538,16 @@ export const InvoicesPageEdit = () => {
                                 />
                             </Form.Item>
                         </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                label="Invoice Name"
+                                name="invoice_name"
+                                rules={[{required: true}]}
+                            >
+                                <Input
+                                    placeholder="Enter invoice Name"></Input>
+                            </Form.Item>
+                        </Col>
                     </Row>
 
                     <Form.Item
@@ -544,7 +567,7 @@ export const InvoicesPageEdit = () => {
                             level={4}
                             style={{marginBottom: "32px", fontWeight: 400}}
                         >
-                            Products / Services
+                            Items / Services
                         </Typography.Title>
                         <div className={styles.serviceTableWrapper}>
                             <div className={styles.serviceTableContainer}>
@@ -553,7 +576,7 @@ export const InvoicesPageEdit = () => {
                                         xs={{span: 7}}
                                         className={styles.serviceHeaderColumn}
                                     >
-                                        Title
+                                        Name
                                         <Divider
                                             type="vertical"
                                             className={styles.serviceHeaderDivider}
@@ -617,14 +640,15 @@ export const InvoicesPageEdit = () => {
                                                             >
                                                                 <Input
                                                                     placeholder="Title"
-                                                                    value={service.title}
+                                                                    value={service.name}
+                                                                    required={true}
                                                                     onChange={(e) => {
                                                                         setServices((prev) =>
                                                                             prev.map((item, i) =>
                                                                                 i === index
                                                                                     ? {
                                                                                         ...item,
-                                                                                        title: e.target.value
+                                                                                        name: e.target.value
                                                                                     }
                                                                                     : item
                                                                             )
@@ -676,13 +700,13 @@ export const InvoicesPageEdit = () => {
                                                                 <InputNumber
                                                                     addonAfter="%"
                                                                     style={{width: "100%"}}
-                                                                    placeholder="Discount"
+                                                                    placeholder="Discount Percentage"
                                                                     min={0}
-                                                                    value={service.discount}
+                                                                    value={service.item_discount_percentage}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
                                                                             index,
-                                                                            "discount",
+                                                                            "item_discount_percentage",
                                                                             value || 0
                                                                         );
                                                                     }}
@@ -743,10 +767,13 @@ export const InvoicesPageEdit = () => {
                                             setServices((prev) => [
                                                 ...prev,
                                                 {
-                                                    title: "",
+                                                    name: "",
                                                     unitPrice: 0,
+                                                    unitCode: "",
                                                     quantity: 0,
-                                                    discount: 0,
+                                                    price_without_discount: 0,
+                                                    item_discount_percentage: 0,
+                                                    item_discount_amount: 0,
                                                     totalPrice: 0,
                                                     description: "",
                                                 },
@@ -791,15 +818,22 @@ export const InvoicesPageEdit = () => {
                                 <Typography.Text className={styles.labelTotal}>
                                     Tax:
                                 </Typography.Text>
-                                <InputNumber
-                                    addonAfter="%"
-                                    style={{width: "96px"}}
-                                    value={tax}
-                                    min={0}
-                                    onChange={(value) => {
-                                        setTax(value || 0);
-                                    }}
-                                />
+                                <Form.Item
+                                    name="tax"
+                                    label="VAT"
+                                    labelCol={{span: 8}}
+                                    wrapperCol={{span: 16}}
+                                    style={{display: "flex", alignItems: "center"}}
+                                >
+                                    <InputNumber
+                                        addonAfter="%"
+                                        style={{width: "96px"}}
+                                        min={0}
+                                        onChange={(value) => {
+                                            setTax(value || 0);
+                                        }}
+                                    />
+                                </Form.Item>
                             </Flex>
                             <Divider
                                 style={{

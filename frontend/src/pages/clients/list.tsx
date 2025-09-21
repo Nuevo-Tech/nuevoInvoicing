@@ -61,7 +61,7 @@ export const ClientsPageList = ({ children }: PropsWithChildren) => {
   return (
     <>
       <List
-        title="Clients"
+        title="Customers"
         headerButtons={() => {
           return (
             <CreateButton
@@ -73,7 +73,7 @@ export const ClientsPageList = ({ children }: PropsWithChildren) => {
                 })
               }
             >
-              Add new client
+              Add new Customer
             </CreateButton>
           );
         }}
@@ -103,7 +103,7 @@ export const ClientsPageList = ({ children }: PropsWithChildren) => {
             }}
           />
           <Table.Column
-            title="Client Name"
+            title="Customer Name"
             dataIndex="partyLegalEntityRegistrationName"
             key="partyLegalEntityRegistrationName"
             sorter

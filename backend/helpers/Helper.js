@@ -1,0 +1,211 @@
+import {randomUUID} from "crypto";
+
+class Helper {
+    /**
+     * Generate a UUID (v4 by default)
+     */
+    static generateUUID() {
+        return randomUUID();
+    }
+
+    /**
+     * Extract prefix from English part of a string
+     */
+    static getPrefixFromName(name) {
+        // Keep only English letters/words
+        const englishPart = name.replace(/[^A-Za-z\s]/g, "").trim();
+
+        // Take first letters of each word
+        const prefix = englishPart
+            .split(/\s+/)
+            .map(word => word.charAt(0).toUpperCase())
+            .join("");
+
+        // Limit to 3–5 letters for readability
+        return prefix.substring(0, 5);
+    }
+
+    static formatDateToZatca(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
+    static getTimeNowZatca() {
+        const d = new Date();
+        const hours = String(d.getHours()).padStart(2, "0");
+        const minutes = String(d.getMinutes()).padStart(2, "0");
+        const seconds = String(d.getSeconds()).padStart(2, "0");
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    static getZatcaInvoiceType(invoiceType) {
+        switch (invoiceType) {
+            case "StandardInvoice":
+                return {value: "388", name: "0100000"};
+            case "StandardInvoiceCreditNote":
+                return {value: "381", name: "0100000"};
+            case "StandardInvoiceDebitNote":
+                return {value: "383", name: "0100000"};
+
+            case "SimplifiedInvoice":
+                return {value: "388", name: "0200000"};
+            case "SimplifiedInvoiceCreditNote":
+                return {value: "381", name: "0200000"};
+            case "SimplifiedInvoiceDebitNote":
+                return {value: "383", name: "0200000"};
+
+            default:
+                throw new Error(`Unknown invoice type: ${invoiceType}`);
+        }
+    }
+
+    static toTwoDecimalsString(value) {
+        if (isNaN(value) || value === null) return "0.00";
+        return parseFloat(value).toFixed(2);
+    }
+
+    // Example: reqBody.items = [
+//   { id: 1, name: "قلم رصاص", unitCode: "PCE", quantity: 2, unitPrice: 2.00, taxPercent: 15 }
+// ]
+    static buildInvoiceLines(items, currency, taxCateogory, taxPercentage, taxScheme) {
+        return items.map((item, index) => {
+            const lineExtensionAmount = item.unitPrice * item.quantity; // total before tax
+            const taxAmount = (lineExtensionAmount * taxPercentage) / 100;
+            const roundingAmount = lineExtensionAmount + taxAmount;
+
+            return {
+                id: String(index + 1),
+                invoicedQuantity: {
+                    value: item.quantity.toFixed(6), // UBL needs 6 decimals
+                    unitCode: item.unitCode || "PCE",
+                },
+                lineExtensionAmount: {
+                    value: lineExtensionAmount.toFixed(2),
+                    currencyId: currency,
+                },
+                taxTotal: {
+                    taxAmount: {
+                        value: taxAmount.toFixed(2),
+                        currencyId: currency,
+                    },
+                    roundingAmount: {
+                        value: roundingAmount.toFixed(2),
+                        currencyId: currency,
+                    },
+                },
+                item: {
+                    name: item.name,
+                    classifiedTaxCategory: {
+                        id: taxCateogory, // Standard-rated
+                        percent: taxPercentage.toFixed(2),
+                        taxScheme: {
+                            id: taxScheme,
+                        },
+                    },
+                },
+                price: {
+                    priceAmount: {
+                        value: item.unitPrice.toFixed(2),
+                        currencyId: currency,
+                    },
+                },
+            };
+        });
+    }
+
+    static buildAccountingCustomerParty(ClientModel) {
+
+        // Map Mongo fields into required structure
+        return {
+            party: {
+                postalAddress: {
+                    streetName: ClientModel.streetName,
+                    buildingNumber: ClientModel.buildingNumber,
+                    citySubdivisionName: ClientModel.citySubdivisionName,
+                    cityName: ClientModel.cityName,
+                    postalZone: ClientModel.postalZone,
+                    country: {
+                        identificationCode: ClientModel.countryIdentificationCode
+                    }
+                },
+                partyTaxScheme: {
+                    companyID: ClientModel.partyTaxSchemeCompanyID,
+                    taxScheme: {
+                        id: ClientModel.partyTaxSchemeTaxSchemeId
+                    }
+                },
+                partyLegalEntity: {
+                    registrationName: ClientModel.partyLegalEntityRegistrationName
+                }
+            }
+        };
+    }
+
+    static buildAccountingSupplierParty(MyOrgProfileModel) {
+        // Fetch MyOrgProfile document
+        return {
+            party: {
+                partyIdentification: {
+                    id: MyOrgProfileModel.partyId,
+                    schemeID: MyOrgProfileModel.partySchemeID || "CRN" // default if missing
+                },
+                postalAddress: {
+                    streetName: MyOrgProfileModel.streetName,
+                    buildingNumber: MyOrgProfileModel.buildingNumber,
+                    citySubdivisionName: MyOrgProfileModel.citySubdivisionName,
+                    cityName: MyOrgProfileModel.cityName,
+                    postalZone: MyOrgProfileModel.postalZone,
+                    country: {
+                        identificationCode: MyOrgProfileModel.countryIdentificationCode
+                    }
+                },
+                partyTaxScheme: {
+                    companyID: MyOrgProfileModel.partyTaxSchemeCompanyID,
+                    taxScheme: {
+                        id: MyOrgProfileModel.partyTaxSchemeTaxSchemeId
+                    }
+                },
+                partyLegalEntity: {
+                    registrationName: MyOrgProfileModel.partyLegalEntityRegistrationName
+                }
+            }
+        };
+    }
+
+
+    /**
+     * Concatenate multiple strings with a separator
+     */
+    static joinStrings(parts, separator = "") {
+        return parts.join(separator);
+    }
+
+    /**
+     * Convert a string to Title Case
+     */
+    static toTitleCase(str) {
+        return str.replace(/\w\S*/g, txt => {
+            return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
+        });
+    }
+
+    /**
+     * Pad a string to a specific length
+     */
+    static padString(str, length, padChar = " ") {
+        if (str.length >= length) return str;
+        return str + padChar.repeat(length - str.length);
+    }
+
+    /**
+     * Repeat a string N times
+     */
+    static repeatString(str, times) {
+        return str.repeat(times);
+    }
+}
+
+export default Helper;

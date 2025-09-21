@@ -58,8 +58,8 @@ export const InvoicePageList = () => {
 
   const { selectProps: selectPropsClients } = useSelect({
     resource: "clients",
-    optionLabel: "client_name",
-    optionValue: "client_name",
+    optionLabel: "partyLegalEntityRegistrationName",
+    optionValue: "partyLegalEntityRegistrationName",
   });
 
   const { selectProps: selectPropsInvoices } = useSelect({
@@ -176,15 +176,15 @@ export const InvoicePageList = () => {
           />
           <Table.Column
             title="Client"
-            dataIndex="client.client_name"
-            key="client.client_name"
+            dataIndex="client.partyLegalEntityRegistrationName"
+            key="client.partyLegalEntityRegistrationName"
             render={(_, record: Invoice) => {
               return (
-                <Typography.Text>{record.client?.client_name}</Typography.Text>
+                <Typography.Text>{record.client?.partyLegalEntityRegistrationName}</Typography.Text>
               );
             }}
             defaultFilteredValue={getDefaultFilter(
-              "client_name",
+              "partyLegalEntityRegistrationName",
               filters,
               "in"
             )}

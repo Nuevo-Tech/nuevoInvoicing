@@ -1,4 +1,4 @@
-import MyOrgProfile from "../mongodb/models/myOrgProfile.js";
+import MyOrgProfile from "../mongodb/models/myorgprofile.js";
 import User from "../mongodb/models/user.js";
 import * as dotenv from "dotenv";
 import {v2 as cloudinary} from "cloudinary";

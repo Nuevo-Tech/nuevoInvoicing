@@ -57,7 +57,7 @@ export const ClientsPageEdit = () => {
 
     return (
         <Show
-            title="Clients"
+            title="Customers"
             headerButtons={() => false}
             contentProps={{
                 styles: {
@@ -107,7 +107,7 @@ export const ClientsPageEdit = () => {
                             title={
                                 <Flex gap={12} align="center">
                                     <ShopOutlined/>
-                                    <Typography.Text>Client info</Typography.Text>
+                                    <Typography.Text>Customer info</Typography.Text>
                                 </Flex>
                             }
                         >
@@ -252,7 +252,7 @@ export const ClientsPageEdit = () => {
                                 list("clients");
                             }}
                         >
-                            Delete client
+                            Delete Customer
                         </DeleteButton>
                     </Col>
 
@@ -290,7 +290,7 @@ export const ClientsPageEdit = () => {
                                     )}
                                 />
                                 <Table.Column
-                                    title="Client"
+                                    title="Customer"
                                     dataIndex="client"
                                     key="client"
                                     render={(client) => client?.client_name}
