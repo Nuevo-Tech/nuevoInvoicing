@@ -6,9 +6,10 @@ import MyOrgProfile from "../mongodb/models/myorgprofile.js";
 import User from "../mongodb/models/user.js";
 import mongoose from "mongoose";
 import InvoiceBuilder from "../helpers/InvoiceBuilder.js";
+import axios from "axios";
 
-const roundToFour = (num) => {
-    return Number(Number(num).toFixed(4));
+const roundToTwo = (num) => {
+    return Number(Number(num).toFixed(2));
 };
 
 const getAllInvoices = async (req, res) => {
@@ -180,8 +181,8 @@ const createInvoice = async (req, res) => {
             services.map((service) => ({...service, creator: userId})),
             {session}
         );
-        let subTotalRounded = roundToFour(subtotal);
-        let totalRounded = roundToFour(total);
+
+        let totalRounded = roundToTwo(total);
 
         const clientDoc = await Client.findById(client)
         const myOrgProfile = await MyOrgProfile.findOne();
@@ -197,6 +198,17 @@ const createInvoice = async (req, res) => {
 
         const jsonPayload = await builder.createInvoiceFromRequest(req.body, "new", clientDoc, myOrgProfile);
 
+        const response = await axios.get(
+            process.env.CURRENCY_BEACON_BASE_URL + "/convert",
+            {
+                params: {
+                    api_key: process.env.CURRENCY_BEACON_API_KEY,
+                    from: baseCurrency,
+                    to: targetCurrency,
+                    amount: amount,
+                },
+            }
+        );
         const newInvoice = new Invoice({
             id,
             invoice_id,
@@ -214,7 +226,7 @@ const createInvoice = async (req, res) => {
             payment_means,
             createdDate: new Date(),
             tax_percentage,
-            subtotal: subTotalRounded,
+            subtotal,
             total: totalRounded,
             discount,
             note,
@@ -318,8 +330,7 @@ const updateInvoice = async (req, res) => {
             await Service.deleteMany({_id: {$in: deletedServices}}, {session});
         }
 
-        let subTotalRounded = roundToFour(subtotal);
-        let totalRounded = roundToFour(total);
+        let totalRounded = roundToTwo(total);
 
         // Update the invoice
         invoice.account = account;
@@ -330,7 +341,7 @@ const updateInvoice = async (req, res) => {
             ...newServiceDocs.map((s) => s._id),
         ];
         invoice.tax = tax;
-        invoice.subtotal = subTotalRounded;
+        invoice.subtotal = subtotal;
         invoice.total = totalRounded;
         invoice.status = status;
         invoice.currency = currency;
