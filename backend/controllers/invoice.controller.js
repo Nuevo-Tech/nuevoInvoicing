@@ -273,7 +273,6 @@ const updateInvoice = async (req, res) => {
             tax_category,
             tax_scheme_id,
             payment_means,
-            status,
             currency,
             note,
             services,
@@ -366,6 +365,7 @@ const updateInvoice = async (req, res) => {
         // Update the invoice
         invoice.account = account;
         invoice.client = client;
+        invoice.status = "Draft";
         invoice.services = [
             ...updatedServices.map((s) => s._id),
             ...newServiceDocs.map((s) => s._id),
