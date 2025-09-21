@@ -61,6 +61,6 @@ export function onboardClient(payload) {
 //     return handleRequest(api.post("/checkInvoicesCompliance", requestBody));
 // }
 
-    export function reportInvoice(payload) {
-        return handleRequest(api.post("/reportInvoice", payload));
-    }
+    // export function reportInvoice(payload) {
+    //     return handleRequest(api.post("/reportInvoice", payload));
+    // }

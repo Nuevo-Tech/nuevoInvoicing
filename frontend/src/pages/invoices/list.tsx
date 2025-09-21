@@ -22,7 +22,9 @@ import {
     Select,
     Table,
     Typography,
-    Space, Button
+    Space,
+    Button,
+    Spin,
 } from "antd";
 import {
     EditOutlined,
@@ -70,6 +72,17 @@ export const InvoicePageList = () => {
         optionValue: "invoice_name",
     });
 
+    const statusOptions = [
+        {value: "Draft", label: "Draft", color: "orange"},
+        {value: "Validated W", label: "Valiadted W", color: "cyan"},
+        {value: "Validated", label: "Validated", color: "green"},
+        {value: "ValidationFailed", label: "ValidationFailed", color: "red"},
+        {value: "Paid", label: "Paid", color: "green"},
+        {value: "ZatcaReported W", label: "ZatcaReported W", color: "cyan"},
+        {value: "ZatcaReported", label: "ZatcaReported", color: "green"},
+        {value: "ZatcaReportingFailed", label: "ZatcaReportingFailed", color: "red"},
+    ];
+
     //row selection code
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]); // selected row IDs
 
@@ -80,19 +93,43 @@ export const InvoicePageList = () => {
         },
     };
     const [loading, setLoading] = useState(false);
-    const handleSendSelected = async () => {
+    const handleSendSelectedCompliance = async () => {
         if (selectedRowKeys.length === 0) return;
         const payload = {
             invoices: selectedRowKeys.map((id) => ({
                 invoiceId: id,
             })),
         };
-        try {// 🔹 Start loading
+        try {
+            setLoading(true); // 🔹 Start loading
             const response = await fetch("http://localhost:8081/api/v1/zatca/checkInvoicesCompliance", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(payload),
             });
+            setLoading(false);
+            window.location.reload();
+        } catch (error) {
+            console.error("Error sending selected invoices:", error);
+        }
+    };
+
+    const handleSendSelectedReporting = async () => {
+        if (selectedRowKeys.length === 0) return;
+        const payload = {
+            invoices: selectedRowKeys.map((id) => ({
+                invoiceId: id,
+            })),
+        };
+        try {
+            setLoading(true); // 🔹 Start loading
+            const response = await fetch("http://localhost:8081/api/v1/zatca/reportInvoice", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            });
+            setLoading(false);
+            window.location.reload();
         } catch (error) {
             console.error("Error sending selected invoices:", error);
         }
@@ -109,6 +146,7 @@ export const InvoicePageList = () => {
 
     return (
         <>
+            <Spin spinning={loading} tip="Processing...">
             <List
                 title="Invoices"
                 headerButtons={() => {
@@ -116,7 +154,7 @@ export const InvoicePageList = () => {
                         <Space>
                             <SaveButton
                                 size="large"
-                                onClick={handleSendSelected}
+                                onClick={handleSendSelectedReporting}
                                 icon={<FileDoneOutlined/>}
                                 disabled={selectedRowKeys.length === 0}
                             >
@@ -124,7 +162,7 @@ export const InvoicePageList = () => {
                             </SaveButton>
                             <SaveButton
                                 size="large"
-                                onClick={handleSendSelected}
+                                onClick={handleSendSelectedCompliance}
                                 icon={<SafetyOutlined/>}
                                 disabled={selectedRowKeys.length === 0}
                             >
@@ -318,11 +356,10 @@ export const InvoicePageList = () => {
                         key="status"
                         width={160}
                         render={(status) => {
-                            let color = "default";
-                            if (status === "Draft") color = "blue";
-                            else if (status === "Validation Pass") color = "orange";
-                            else if (status === "Submitted to ZATCA") color = "green";
-                            return <TagField value={status} color={color}/>;
+                            const option = statusOptions.find((o) => o.value === status);
+                            const color = option?.color || "default"; // fallback if status not found
+                            const label = option?.label || status;
+                            return <TagField value={label} color={color}/>;
                         }}
                     />
                     <Table.Column
@@ -375,6 +412,7 @@ export const InvoicePageList = () => {
                     />
                 </Table>
             </List>
+            </Spin>
             <Modal visible={visible} onCancel={close} width="80%" footer={null}>
                 <PdfLayout record={record}/>
             </Modal>

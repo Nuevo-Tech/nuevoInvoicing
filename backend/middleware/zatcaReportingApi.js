@@ -6,7 +6,7 @@ import {handleRequest, api} from "./zatcaApis.js"; // your API helper
 const router = express.Router();
 const ZATCA_API_BASE_URL = process.env.ZATCA_BACKEND_BASE_URL;
 
-const ALLOWED_STATUSES = ["Draft", "Validated W", "Validated", "ValidationFailed"];
+const ALLOWED_STATUSES = ["Validated W", "Validated"];
 
 router.post("/", async (req, res) => {
     const session = await mongoose.startSession();
@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
 
         console.log("📥 Request body being sent:", requestBody);
 
-        const response = await handleRequest(api.post(ZATCA_API_BASE_URL + "/checkInvoicesCompliance", requestBody));
+        const response = await handleRequest(api.post(ZATCA_API_BASE_URL + "/reportInvoice", requestBody));
         const responseData = Array.isArray(response?.zatcaData) ? response.zatcaData : [];
 
         console.log("📥 ZATCA response:", responseData);
@@ -77,9 +77,9 @@ router.post("/", async (req, res) => {
 
             if (invoice.invoice_type.includes("Standard")) {
                 if (clearance === "CLEARED" && errors.length === 0 && warnings.length === 0) {
-                    invoice.status = "Validated";
+                    invoice.status = "ZatcaReported";
                 } else if (clearance === "CLEARED" && errors.length === 0 && warnings.length > 0) {
-                    invoice.status = "Validated W";
+                    invoice.status = "ZatcaReported W";
                 } else {
                     invoice.status = "ValidationFailed";
                 }
@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
                     invoice.status = "Validated W";
                 }
                 else {
-                    invoice.status = "ValidationFailed";
+                    invoice.status = "ZatcaReportingFailed";
                 }
             }
 
@@ -106,12 +106,12 @@ router.post("/", async (req, res) => {
         return res.status(200).json({
             processedInvoices: responseData,
             invalidInvoices,
-            message: "Compliance check completed successfully",
+            message: "Zatca Reporting completed successfully",
         });
     } catch (error) {
         await session.abortTransaction();
-        console.error("Compliance check failed:", error);
-        return res.status(500).json({message: "Compliance check failed", error: error.message});
+        console.error("Zatca Reporting  failed:", error);
+        return res.status(500).json({message: "Zatca Reporting  failed", error: error.message});
     } finally {
         session.endSession();
     }

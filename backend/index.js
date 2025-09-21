@@ -22,6 +22,7 @@ import onboardClientRouter from "./routes/onboardclient.routes.js";
 import myorgprofileRouter from "./routes/myorgprofile.routes.js";
 import zatcaBackendRouter from "./routes/zatcabackend.routes.js";
 import zatcaComplianceCheckRouter from "./middleware/zatcaComplianceApi.js";
+import zatcaReportInvoiceRouter from "./middleware/zatcaReportingApi.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,6 +52,7 @@ app.use("/api/v1/clientmedias", clientMediaRouter);
 app.use("/api/v1/myorgprofile", myorgprofileRouter);
 app.use("/api/v1/zatca/onboardClient", onboardClientRouter);
 app.use("/api/v1/zatca/checkInvoicesCompliance", zatcaComplianceCheckRouter);
+app.use("/api/v1/zatca/reportInvoice", zatcaReportInvoiceRouter);
 app.use("/api/v1/zatca", zatcaBackendRouter);
 
 
