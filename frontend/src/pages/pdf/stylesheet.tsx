@@ -29,6 +29,7 @@ export const styles = {
   headerText: {
     fontSize: 14,
     fontWeight: "bold",
+    fontFamily: "Amiri",
   },
   inoviceTextNumberContainer: {
     display: "flex",
@@ -39,6 +40,7 @@ export const styles = {
   inoviceText: {
     fontSize: 12,
     fontWeight: "bold",
+    fontFamily: "Amiri",
     color: "#333",
   },
   inoviceId: {
@@ -53,11 +55,13 @@ export const styles = {
   },
   inoviceForFromTitle: {
     fontSize: 12,
+    fontFamily: "Amiri",
     fontWeight: "bold",
     marginBottom: 5,
   },
   inoviceForFromText: {
     fontSize: 10,
+    fontFamily: "Amiri",
     color: "#555",
     marginBottom: 2,
   },
@@ -80,6 +84,7 @@ export const styles = {
   },
   tableHeaderItem: {
     fontSize: 10,
+    fontFamily: "Amiri",
     fontWeight: "bold",
     textAlign: "center",
     padding: 5,
@@ -112,6 +117,7 @@ export const styles = {
   },
   signatureText: {
     fontSize: 10,
+    fontFamily: "Amiri",
     color: "#333",
     marginBottom: 5,
   },

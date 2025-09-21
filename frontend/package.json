@@ -35,6 +35,7 @@
     "antd-style": "^3.6.1",
     "apexcharts": "^4.5.0",
     "axios": "^1.6.2",
+    "qrcode": "^1.5.4",
     "react": "^18.0.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^18.0.0",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.16.2",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/react-input-mask": "^3.0.1",

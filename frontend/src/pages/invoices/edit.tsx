@@ -342,13 +342,20 @@ export const InvoicesPageEdit = () => {
         });
     };
 
+    const DISABLED_STATUSES = [
+        "Paid",
+        "ZatcaReported",
+        "ZatcaReported W",
+    ];
+
     if (queryResult?.isLoading) return <Spin/>;
 
     const record = queryResult?.data?.data;
+    const isDisabled = DISABLED_STATUSES.includes(record?.status ?? "");
     return (
         <Edit
             title="Edit Invoice"
-            saveButtonProps={saveButtonProps}
+            saveButtonProps={{...saveButtonProps ,disabled: isDisabled}}
             contentProps={{
                 styles: {
                     body: {
@@ -363,6 +370,7 @@ export const InvoicesPageEdit = () => {
             <Form
                 {...formProps}
                 layout="vertical"
+                disabled={isDisabled}
                 onFinish={async (values) => {
                     userId;
 

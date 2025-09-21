@@ -268,7 +268,7 @@ export const InvoicesPageShow = () => {
                   <Typography.Text className={styles.labelTotal}>
                     Tax:
                   </Typography.Text>
-                  <Typography.Text>{invoice?.tax || 0}%</Typography.Text>
+                  <Typography.Text>{invoice?.tax_percentage || 0}%</Typography.Text>
                 </Flex>
                 <Divider
                   style={{
