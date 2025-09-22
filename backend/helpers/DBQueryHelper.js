@@ -15,6 +15,8 @@ export async function generateInvoiceId(Client, session){
     ).session(session);
 
     const seqNumber = counter.seq.toString().padStart(3, "0"); // e.g. 001, 002, ...
-    return `${prefix}${seqNumber}`;
+    const invoiceId = `${prefix}${seqNumber}`;
+    counter.invoice_id = invoiceId;
+    return invoiceId;
 }
 

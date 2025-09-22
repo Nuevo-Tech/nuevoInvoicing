@@ -7,6 +7,10 @@ import User from "../mongodb/models/user.js";
 import mongoose from "mongoose";
 import InvoiceBuilder from "../helpers/InvoiceBuilder.js";
 import {createInvoiceZatcaBackend, updateInvoiceZatcaBackend} from "../middleware/zatcaApis.js";
+import axios from "axios";
+import InvoiceCounter from "../mongodb/models/invoicecounter.js";
+
+const ZATCA_API_BASE_URL = process.env.ZATCA_BACKEND_BASE_URL;
 
 
 const roundToTwo = (num) => {
@@ -215,7 +219,7 @@ const createInvoice = async (req, res) => {
             payment_means,
             tax_percentage,
             subtotal,
-            total: totalRounded,
+            total,
             discount,
             note,
             currency,
@@ -377,7 +381,7 @@ const updateInvoice = async (req, res) => {
         invoice.subtotal = subtotal;
         invoice.discount = discount;
         invoice.invoice_type = invoice_type;
-        invoice.total = totalRounded;
+        invoice.total = total;
         invoice.status = status;
         invoice.currency = currency;
         invoice.invoice_name = invoice_name;
@@ -449,9 +453,23 @@ const deleteInvoice = async (req, res) => {
         invoice.account.invoices.pull(invoice);
         invoice.client.invoices.pull(invoice);
 
-        await invoice.account.save({session}).session(session);
+        await invoice.account.save({session})
 
-        await Invoice.deleteOne({id}).session(session).session(session);
+        await Invoice.deleteOne({id}).session(session);
+        await InvoiceCounter.deleteOne({invoice_id: id}).session(session);
+
+        // 🔥 Call Spring Boot delete endpoint
+        try {
+            await axios.delete(ZATCA_API_BASE_URL + "/invoice/" + invoice.uuid);
+        } catch (springError) {
+            // If Spring Boot fails, rollback Mongo as well
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(500).json({
+                message: "Failed to delete invoice in backend service",
+                error: springError.response?.data || springError.message,
+            });
+        }
 
         await session.commitTransaction();
         session.endSession();

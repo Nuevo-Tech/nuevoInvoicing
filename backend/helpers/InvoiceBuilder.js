@@ -97,13 +97,13 @@ class InvoiceBuilder {
         const taxTotal = [
             {
                 taxAmount: {
-                    value: totalTaxAmount.toFixed(1), // e.g. "0.6"
+                    value: totalTaxAmount.toFixed(2), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
             },
             {
                 taxAmount: {
-                    value: totalTaxAmount.toFixed(1), // e.g. "0.6"
+                    value: totalTaxAmount.toFixed(2), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxSubtotal: {
