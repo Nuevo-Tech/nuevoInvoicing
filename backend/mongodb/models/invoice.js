@@ -43,8 +43,12 @@ const InvoiceSchema = new mongoose.Schema({
         subtotal: {type: Number, required: true},
         total: {type: Number, required: true},
         prepaid_amount: {type: Number, default: 0},
-            zatcaErrorMessages: {type: [String], default: []},
-            zatcaWarningMessages: {type: [String],default: []},
+        zatcaErrorMessages: {type: [String], default: []},
+        zatcaWarningMessages: {type: [String], default: []},
+        zatca_response: {
+            type: mongoose.Schema.Types.Mixed, // or Object
+            default: {},
+        },
     },
     {timestamps: true} // adds createdAt, updatedAt
 );

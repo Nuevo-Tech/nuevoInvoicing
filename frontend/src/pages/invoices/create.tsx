@@ -36,7 +36,7 @@ import {useGo} from "@refinedev/core";
 
 export const InvoicesPageCreate = () => {
     const go = useGo();
-    const [tax, setTax] = useState<number>(15);
+    const [tax, setTax] = useState<number>(15.00);
     const [services, setServices] = useState<Service[]>([
         {
             name: "",

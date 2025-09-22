@@ -32,7 +32,9 @@ import {
     FilePdfOutlined,
     SearchOutlined,
     SafetyOutlined,
-    FileDoneOutlined
+    FileDoneOutlined,
+    InfoCircleOutlined
+
 } from "@ant-design/icons";
 import {API_URL} from "@/utils/constants";
 import {BASE_URL_API_V1} from "@/utils/urls";
@@ -40,6 +42,7 @@ import {getRandomColorFromString} from "@/utils/get-random-color";
 import type {Invoice} from "@/types";
 import {PdfLayout} from "../pdf";
 import {useState} from "react";
+import JsonModalLayout from "@/pages/actions/JsonModalLayout";
 
 export const InvoicePageList = () => {
     const [record, setRecord] = useState<Invoice>();
@@ -143,6 +146,7 @@ export const InvoicePageList = () => {
 //         selectedRowKeys.every((invoice) => allowedStatusesForZatcaReporting.includes(invoice.status));
 
     const {show, visible, close} = useModal();
+    const [visibleJsonModal, setVisibleJsonModal] = useState(false);
 
     return (
         <>
@@ -406,6 +410,15 @@ export const InvoicePageList = () => {
                                             show();
                                         }}
                                     />
+                                    <Button
+                                        size="small"
+                                        icon={<InfoCircleOutlined />}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setRecord(record);
+                                            setVisibleJsonModal(true);
+                                        }}
+                                    />
                                 </Flex>
                             );
                         }}
@@ -415,6 +428,15 @@ export const InvoicePageList = () => {
             </Spin>
             <Modal visible={visible} onCancel={close} width="80%" footer={null}>
                 <PdfLayout record={record}/>
+            </Modal>
+            <Modal
+                visible={visibleJsonModal}
+                onCancel={() => setVisibleJsonModal(false)}
+                width="80%"
+                footer={null}
+                title="Invoice ZATCA Response"
+            >
+                {record && <JsonModalLayout record={record} />}
             </Modal>
         </>
     );

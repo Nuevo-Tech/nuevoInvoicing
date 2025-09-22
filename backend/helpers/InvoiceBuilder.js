@@ -64,12 +64,12 @@ class InvoiceBuilder {
                 chargeIndicator: false,
                 allowanceChargeReason: "discount",
                 amount: {
-                    value: Helper.toTwoDecimalsString(reqBody.total_discount_amount),
+                    value: reqBody.total_discount_amount.fixed(2),
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxCategory: {
                     id: reqBody.tax_category,
-                    percent: reqBody.tax_percentage.toString(),
+                    percent: reqBody.tax_percentage.fixed(2),
                     taxScheme: {id: taxScheme},
                 }
             }

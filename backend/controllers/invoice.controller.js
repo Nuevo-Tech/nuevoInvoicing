@@ -450,6 +450,12 @@ const deleteInvoice = async (req, res) => {
             return res.status(404).json({message: "Invoice not found"});
         }
 
+        const ALLOWED_STATUSES = ["Draft", "Validated W", "Validated", "ValidationFailed"];
+        if (!ALLOWED_STATUSES.includes(invoice.status)) {
+            await session.abortTransaction();
+            return res.status(403).json({ message: "Reported invoices to Zatca can't be deleted" });
+        }
+
         invoice.account.invoices.pull(invoice);
         invoice.client.invoices.pull(invoice);
 
