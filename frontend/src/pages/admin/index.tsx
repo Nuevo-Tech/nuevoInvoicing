@@ -6,13 +6,19 @@ import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
 
 const AdminPage: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
+    // Check sessionStorage for admin login
+    React.useEffect(() => {
+        if (sessionStorage.getItem("adminLoggedIn") === "true") {
+            navigate("/admin/dashboard");
+        }
+    }, [navigate]);
+
     const onFinishLogin = (values: { email: string; password: string }) => {
         if (values.email === "admin" && values.password === "admin123") {
-            setLoggedIn(true);
+            sessionStorage.setItem("adminLoggedIn", "true");
             setError("");
             setTimeout(() => navigate("/admin/dashboard"), 300); // short delay for UX
         } else {
