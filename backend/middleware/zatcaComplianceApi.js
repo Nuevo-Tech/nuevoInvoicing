@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
 import Invoice from "../mongodb/models/invoice.js";
 import { handleRequest, api } from "./zatcaApis.js"; // your API helper
 
@@ -38,7 +37,7 @@ router.post("/", async (req, res) => {
 
             invoicesWithInfo.push({
                 invoiceId,
-                invoiceType: invoiceDoc.invoice_type || "StandardInvoice",
+                invoiceType: invoiceDoc.invoice_type || "",
             });
         }
 
@@ -80,12 +79,16 @@ router.post("/", async (req, res) => {
                         status = "Validated";
                     } else if (clearance === "CLEARED" && errors.length === 0 && warnings.length > 0) {
                         status = "Validated W";
+                    } else {
+                        status = "ValidationFailed";
                     }
                 } else if (resItem.invoiceType?.includes("Simplified")) {
                     if (reporting === "REPORTED" && errors.length === 0 && warnings.length === 0) {
                         status = "Validated";
                     } else if (reporting === "REPORTED" && errors.length === 0 && warnings.length > 0) {
                         status = "Validated W";
+                    }else {
+                        status = "ValidationFailed";
                     }
                 }
 
