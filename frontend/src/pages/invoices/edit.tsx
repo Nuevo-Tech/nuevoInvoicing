@@ -57,6 +57,9 @@ export const InvoicesPageEdit = () => {
         if (queryResult?.data?.data?.services) {
             setServices(queryResult?.data?.data?.services);
         }
+        if (queryResult?.data?.data?.tax_percentage !== undefined) {
+            setTaxPercentage(queryResult.data.data.tax_percentage);
+        }
     }, [queryResult]);
 
     const {selectProps: selectPropsClients} = useSelect({
@@ -308,7 +311,7 @@ export const InvoicesPageEdit = () => {
     };
 
 
-    const [tax, setTax] = useState<number>(0);
+    const [taxPercentage, setTaxPercentage] = useState<number>(0);
 
     const totalDiscountAmount = services.reduce(
         (acc, service) =>
@@ -320,7 +323,7 @@ export const InvoicesPageEdit = () => {
             (service.unitPrice * service.quantity * (100 - service.item_discount_percentage)) / 100,
         0
     );
-    const total = subtotal + (subtotal * tax) / 100;
+    const total = subtotal + (subtotal * taxPercentage) / 100;
 
     const handleServiceNumbersChange = (
         index: number,
