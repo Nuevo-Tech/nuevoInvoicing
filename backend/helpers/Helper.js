@@ -67,14 +67,25 @@ class Helper {
         return parseFloat(value).toFixed(2);
     }
 
+    static toFixedTruncate(num, decimals = 2) {
+        const factor = Math.pow(10, decimals);
+        return Math.floor(num * factor) / factor;
+    }
+
+    static roundHalfUp(num, decimals = 2) {
+        const factor = Math.pow(10, decimals);
+        return Math.round(num * factor) / factor;
+    }
+
+
     // Example: reqBody.items = [
 //   { id: 1, name: "قلم رصاص", unitCode: "PCE", quantity: 2, unitPrice: 2.00, taxPercent: 15 }
 // ]
     static buildInvoiceLines(items, currency, taxCateogory, taxPercentage, taxScheme) {
         return items.map((item, index) => {
             const lineExtensionAmount = item.unitPrice * item.quantity; // total before tax
-            const taxAmount = (lineExtensionAmount * taxPercentage) / 100;
-            const roundingAmount = lineExtensionAmount + taxAmount;
+            const taxAmount = (item.unitPrice * item.quantity * taxPercentage) / 100;
+            const roundingAmount = this.roundHalfUp(item.unitPrice * item.quantity) + taxAmount;
 
             return {
                 id: String(index + 1),

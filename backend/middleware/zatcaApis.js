@@ -30,8 +30,8 @@ export function createInvoiceZatcaBackend(payload) {
     return handleRequest(api.post("/invoice/create", payload, {headers: {egsClientName: "Syncshire"}}));
 }
 
-export function updateInvoiceZatcaBackend(payload) {
-    return handleRequest(api.post("/invoice/update", payload, {headers: {egsClientName: "Syncshire"}}));
+export function updateInvoiceZatcaBackend(payload, uuid) {
+    return handleRequest(api.put("/invoice/" + uuid, payload, {headers: {egsClientName: "Syncshire"}}));
 }
 
 export function onboardClient(payload) {
@@ -61,6 +61,6 @@ export function onboardClient(payload) {
 //     return handleRequest(api.post("/checkInvoicesCompliance", requestBody));
 // }
 
-    // export function reportInvoice(payload) {
-    //     return handleRequest(api.post("/reportInvoice", payload));
-    // }
+// export function reportInvoice(payload) {
+//     return handleRequest(api.post("/reportInvoice", payload));
+// }

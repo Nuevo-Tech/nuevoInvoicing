@@ -831,6 +831,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Unit Price"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.unitPrice}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -849,6 +850,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Quantity"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.quantity}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -868,6 +870,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Discount Percentage"
                                                                     min={0}
+                                                                    precision={2}
                                                                     max={100}
                                                                     value={service.item_discount_percentage}
                                                                     onChange={(value) => {

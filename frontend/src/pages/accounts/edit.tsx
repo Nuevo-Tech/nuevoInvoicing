@@ -180,7 +180,7 @@ export const AccountsPageEdit = () => {
               title={
                 <Flex gap={12} align="center">
                   <ShopOutlined />
-                  <Typography.Text>Clients</Typography.Text>
+                  <Typography.Text>Customers</Typography.Text>
                 </Flex>
               }
               styles={{
@@ -200,9 +200,9 @@ export const AccountsPageEdit = () => {
               >
                 <Table.Column title="ID" dataIndex="id" key="id" />
                 <Table.Column
-                  title="Client"
-                  dataIndex="client_name"
-                  key="client_name"
+                  title="Customer"
+                  dataIndex="partyLegalEntityRegistrationName"
+                  key="partyLegalEntityRegistrationName"
                 />
                 <Table.Column
                   title="Email"

@@ -55,12 +55,13 @@ export const InvoicesPageEdit = () => {
 
     useEffect(() => {
         if (queryResult?.data?.data?.services) {
-            setServices(queryResult?.data?.data?.services);
+            setServices((prev) => (prev.length === 0 ? queryResult.data.data.services : prev));
         }
         if (queryResult?.data?.data?.tax_percentage !== undefined) {
             setTaxPercentage(queryResult.data.data.tax_percentage);
         }
     }, [queryResult]);
+
 
     const {selectProps: selectPropsClients} = useSelect({
         resource: "clients",
@@ -338,6 +339,7 @@ export const InvoicesPageEdit = () => {
                 priceBeforeDiscount *
                 ((100 - currentService.item_discount_percentage) / 100);
 
+            currentService.unitCode = "PCE";
             currentService.price_without_discount = priceBeforeDiscount;
             currentService.item_discount_amount = priceBeforeDiscount - currentService.totalPrice;
 
@@ -382,7 +384,7 @@ export const InvoicesPageEdit = () => {
                         userId: userId,
                         services: services,
                         subtotal: subtotal,
-                        tax_percentage: tax,
+                        tax_percentage: taxPercentage,
                         total_discount_amount: totalDiscountAmount,
                         total: total,
                     });
@@ -689,6 +691,7 @@ export const InvoicesPageEdit = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Unit Price"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.unitPrice}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -707,6 +710,7 @@ export const InvoicesPageEdit = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Quantity"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.quantity}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -726,6 +730,7 @@ export const InvoicesPageEdit = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Discount Percentage"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.item_discount_percentage}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -854,7 +859,7 @@ export const InvoicesPageEdit = () => {
                                         style={{width: "96px"}}
                                         min={0}
                                         onChange={(value) => {
-                                            setTax(value || 0);
+                                            setTaxPercentage(value || 0);
                                         }}
                                     />
                                 </Form.Item>

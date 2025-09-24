@@ -84,7 +84,7 @@ router.post("/", async (req, res) => {
                     }
                 } else if (resItem.invoiceType?.includes("Simplified")) {
                     if (reporting === "REPORTED" && errors.length === 0 && warnings.length === 0) {
-                        status = "Validated";
+                        status = "ZatcaReported";
                     } else if (reporting === "REPORTED" && errors.length === 0 && warnings.length > 0) {
                         status = "ZatcaReported W";
                     } else {

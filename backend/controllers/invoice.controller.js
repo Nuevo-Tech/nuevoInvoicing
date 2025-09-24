@@ -219,7 +219,7 @@ const createInvoice = async (req, res) => {
             payment_means,
             tax_percentage,
             subtotal,
-            total,
+            total: totalRounded,
             discount,
             note,
             currency,
@@ -285,6 +285,7 @@ const updateInvoice = async (req, res) => {
             subtotal,
             total,
             userId,
+            status,
         } = req.body;
 
         const user = await User.findById(userId);
@@ -292,18 +293,18 @@ const updateInvoice = async (req, res) => {
             return res.status(404).json({message: "User Not Found"});
         }
 
-        const invoice = await Invoice.findOne({id: id}).session(session);
-        if (!invoice) {
+        const existingInvoice = await Invoice.findOne({id: id}).session(session);
+        if (!existingInvoice) {
             await session.abortTransaction();
             return res.status(404).json({message: "Invoice not found"});
         }
 
         const forbiddenStatuses = ["ZatcaReported W", "ZatcaReported", "Paid"];
 
-        if (forbiddenStatuses.includes(invoice.status)) {
+        if (forbiddenStatuses.includes(existingInvoice.status)) {
             await session.abortTransaction();
             return res.status(403).json({
-                message: `Invoice cannot be edited in status: ${invoice.status}`
+                message: `Invoice cannot be edited in status: ${existingInvoice.status}`
             });
         }
 
@@ -317,11 +318,16 @@ const updateInvoice = async (req, res) => {
             return res.status(404).json({message: "OrgProfile not found"});
         }
 
+        const mergedReqBody = {
+            ...existingInvoice.toObject(), // fallback to old values
+            ...req.body                    // override with new ones
+        };
+
         const builder = new InvoiceBuilder();
 
-        const jsonPayload = await builder.createInvoiceFromRequest(req.body, "new", clientDoc, myOrgProfile);
+        const jsonPayload = await builder.createInvoiceFromRequest(mergedReqBody, "update", clientDoc, myOrgProfile, session);
 
-        const {zatcaStatus, zatcaData} = await updateInvoiceZatcaBackend(jsonPayload);
+        const {zatcaStatus, zatcaData} = await updateInvoiceZatcaBackend(jsonPayload, existingInvoice.uuid);
         if (![200, 202].includes(zatcaStatus)) {
             return res.status(500).json({data: zatcaData, message: zatcaData?.message || "Failed at backend"});
         }
@@ -337,7 +343,7 @@ const updateInvoice = async (req, res) => {
         }
 
         // Extract existing service IDs
-        const existingServiceIds = invoice.services.map((s) => s.toString());
+        const existingServiceIds = existingInvoice.services.map((s) => s.toString());
 
         // Separate services: existing, new, and deleted
         const newServices = services.filter((s) => !s._id); // No ID means new service
@@ -366,36 +372,40 @@ const updateInvoice = async (req, res) => {
 
         let totalRounded = roundToTwo(total);
 
-        // Update the invoice
-        invoice.account = account;
-        invoice.client = client;
-        invoice.status = "Draft";
-        invoice.services = [
-            ...updatedServices.map((s) => s._id),
-            ...newServiceDocs.map((s) => s._id),
-        ];
-        invoice.invoiceDate = invoiceDate ? new Date(invoiceDate) : null;
-        invoice.invoiceTime = jsonPayload.issueTime;
-        invoice.deliveryDate = deliveryDate ? new Date(deliveryDate) : null;
-        invoice.tax_percentage = tax_percentage;
-        invoice.subtotal = subtotal;
-        invoice.discount = discount;
-        invoice.invoice_type = invoice_type;
-        invoice.total = total;
-        invoice.status = status;
-        invoice.currency = currency;
-        invoice.invoice_name = invoice_name;
-        invoice.note = note;
-        invoice.creator = userId;
-        invoice.tax_category = tax_category;
-        invoice.tax_scheme_id = tax_scheme_id;
-        invoice.payment_means = payment_means;
-        invoice.zatca_qr_code = qrCode;
-        invoice.invoice_type_code_value = jsonPayload.invoiceTypeCode.value;
-        invoice.invoice_type_code_name = jsonPayload.invoiceTypeCode.name;
+        //update only that are there
+        // Only update if the field exists in the payload
+        if (account !== undefined) existingInvoice.account = account;
+        if (client !== undefined) existingInvoice.client = client;
+        if (invoice_name !== undefined) existingInvoice.invoice_name = invoice_name;
+        if (invoice_type !== undefined) existingInvoice.invoice_type = invoice_type;
+        if (tax_category !== undefined) existingInvoice.tax_category = tax_category;
+        if (tax_scheme_id !== undefined) existingInvoice.tax_scheme_id = tax_scheme_id;
+        if (payment_means !== undefined) existingInvoice.payment_means = payment_means;
+        if (currency !== undefined) existingInvoice.currency = currency;
+        if (note !== undefined) existingInvoice.note = note;
+        if (tax_percentage !== undefined) existingInvoice.tax_percentage = tax_percentage;
+        if (subtotal !== undefined) existingInvoice.subtotal = subtotal;
+        if (discount !== undefined) existingInvoice.discount = discount;
+        if (total !== undefined) existingInvoice.total = totalRounded;
+        if (services !== undefined) {
+            existingInvoice.services = [
+                ...updatedServices.map((s) => s._id),
+                ...newServiceDocs.map((s) => s._id),
+            ];
+        }
+
+        //mandatory should be updated whenever edited
+        existingInvoice.status = "Draft";
+        existingInvoice.invoiceDate = invoiceDate ? new Date(invoiceDate) : null;
+        existingInvoice.invoiceTime = jsonPayload.issueTime;
+        existingInvoice.deliveryDate = deliveryDate ? new Date(deliveryDate) : null;
+        existingInvoice.creator = userId;
+        existingInvoice.zatca_qr_code = qrCode;
+        existingInvoice.invoice_type_code_value = jsonPayload.invoiceTypeCode.value;
+        existingInvoice.invoice_type_code_name = jsonPayload.invoiceTypeCode.name;
 
         try {
-            await invoice.save({session});
+            await existingInvoice.save({session});
         } catch (err) {
             await session.abortTransaction();
             return res.status(500).json({message: "Failed to save invoice", error: err.message});
@@ -405,8 +415,8 @@ const updateInvoice = async (req, res) => {
             const accountToUpdate = await Account.findById({_id: account._id}).session(
                 session
             );
-            if (accountToUpdate && !accountToUpdate.invoices.includes(invoice._id)) {
-                accountToUpdate.invoices.push(invoice._id);
+            if (accountToUpdate && !accountToUpdate.invoices.includes(existingInvoice._id)) {
+                accountToUpdate.invoices.push(existingInvoice._id);
                 await accountToUpdate.save({session});
             }
         }
@@ -415,8 +425,8 @@ const updateInvoice = async (req, res) => {
             const clientToUpdate = await Client.findOne({_id: client._id}).session(
                 session
             );
-            if (clientToUpdate && !clientToUpdate.invoices.includes(invoice._id)) {
-                clientToUpdate.invoices.push(invoice._id);
+            if (clientToUpdate && !clientToUpdate.invoices.includes(existingInvoice._id)) {
+                clientToUpdate.invoices.push(existingInvoice._id);
                 await clientToUpdate.save({session});
             }
         }
@@ -424,7 +434,7 @@ const updateInvoice = async (req, res) => {
         await session.commitTransaction();
         res
             .status(200)
-            .json({message: "Invoice updated successfully", data: invoice});
+            .json({message: "Invoice updated successfully", data: existingInvoice});
     } catch (error) {
         await session.abortTransaction();
         res.status(500).json({message: error.message});
@@ -453,7 +463,7 @@ const deleteInvoice = async (req, res) => {
         const ALLOWED_STATUSES = ["Draft", "Validated W", "Validated", "ValidationFailed"];
         if (!ALLOWED_STATUSES.includes(invoice.status)) {
             await session.abortTransaction();
-            return res.status(403).json({ message: "Reported invoices to Zatca can't be deleted" });
+            return res.status(403).json({message: "Reported invoices to Zatca can't be deleted"});
         }
 
         invoice.account.invoices.pull(invoice);
