@@ -82,6 +82,7 @@ export type Invoice = {
     subtotal: number;
     total: number;
     prepaid_amount: number;
+    zatca_response: string;
 };
 
 export type Service = {

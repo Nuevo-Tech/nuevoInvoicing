@@ -51,7 +51,7 @@ Open a second terminal window:
 cd backend
 npm install
 npm start
-This will start the backend server (Node.js + Express) on http://localhost:8080.
+This will start the backend server (Node.js + Express) on http://localhost:8081.
 ```
 
 ### ⚙️ Folder Structure

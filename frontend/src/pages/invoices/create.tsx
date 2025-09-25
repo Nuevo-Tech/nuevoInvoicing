@@ -36,7 +36,7 @@ import {useGo} from "@refinedev/core";
 
 export const InvoicesPageCreate = () => {
     const go = useGo();
-    const [tax, setTax] = useState<number>(15);
+    const [tax, setTax] = useState<number>(15.00);
     const [services, setServices] = useState<Service[]>([
         {
             name: "",
@@ -146,14 +146,26 @@ export const InvoicesPageCreate = () => {
             case "Draft":
                 status = "Draft";
                 break;
-            case "NotPaid":
-                status = "NotPaid";
+            case "Validated W":
+                status = "Validated W";
+                break;
+            case "Validated":
+                status = "Validated";
+                break;
+            case "ValidationFailed":
+                status = "ValidationFailed";
                 break;
             case "Paid":
                 status = "Paid";
                 break;
-            case "Refunded":
-                status = "Refunded";
+            case "ZatcaReported W":
+                status = "ZatcaReported W";
+                break;
+            case "ZatcaReported":
+                status = "ZatcaReported";
+                break;
+            case "ZatcaReportingFailed":
+                status = "ZatcaReportingFailed";
                 break;
             default:
                 status = defaultStatus;
@@ -581,6 +593,7 @@ export const InvoicesPageCreate = () => {
                                             rules={[{required: true}]}
                                         >
                                             <Select
+                                                disabled
                                                 placeholder="Select Status"
                                                 onChange={handleStatusChange}
                                                 options={statusOptions.map((opt) => ({
@@ -818,6 +831,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Unit Price"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.unitPrice}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -836,6 +850,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Quantity"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.quantity}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -855,6 +870,7 @@ export const InvoicesPageCreate = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Discount Percentage"
                                                                     min={0}
+                                                                    precision={2}
                                                                     max={100}
                                                                     value={service.item_discount_percentage}
                                                                     onChange={(value) => {

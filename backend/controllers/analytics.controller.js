@@ -1,35 +1,35 @@
 import express from "express";
 import Invoice from "../mongodb/models/invoice.js";
 
+
 const getMonthlyIncomeDetails = async (req, res) => {
   try {
-    const invoices = await Invoice.find({}).limit(5); // Debugging: Check stored data
-
     const incomeData = await Invoice.aggregate([
       {
         $match: {
-          invoiceDate: { $exists: true, $ne: null }, // Ensure invoiceDate is valid
+          createdAt: { $exists: true, $ne: null },
+          total: { $exists: true, $ne: null } // ensure total exists
         },
       },
       {
         $project: {
-          month: { $month: "$invoiceDate" }, // Extract month directly
-          total: 1,
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          total: { $toDouble: "$total" }, // convert to number in case it's a string
         },
       },
       {
         $group: {
-          _id: "$month", // Group by month
-          totalIncome: { $sum: "$total" }, // Sum total amount
+          _id: { year: "$year", month: "$month" },
+          totalIncome: { $sum: "$total" },
         },
       },
-      { $sort: { _id: 1 } }, // Sort by month
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
-
-    // Format data for frontend
     const formattedData = incomeData.map((item) => ({
-      month: new Date(2024, item._id - 1, 1).toLocaleString("default", {
+      year: item._id.year,
+      month: new Date(item._id.year, item._id.month - 1, 1).toLocaleString("default", {
         month: "long",
       }),
       income: item.totalIncome,

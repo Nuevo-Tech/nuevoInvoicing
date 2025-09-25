@@ -185,7 +185,7 @@ export const InvoicesPageShow = () => {
                   fontWeight: 400,
                 }}
               >
-                Product / Services
+                Items / Services
               </Typography.Title>
               <Table
                 dataSource={invoice?.services || []}
@@ -194,7 +194,7 @@ export const InvoicesPageShow = () => {
                 loading={loading}
                 scroll={{ x: 960 }}
               >
-                <Table.Column title="Title" dataIndex="title" key="title" />
+                <Table.Column title="Item Name" dataIndex="name" key="name" />
                 <Table.Column
                   title="Unit Price"
                   dataIndex="unitPrice"
@@ -213,8 +213,8 @@ export const InvoicesPageShow = () => {
                 />
                 <Table.Column
                   title="Discount"
-                  dataIndex="discount"
-                  key="discount"
+                  dataIndex="item_discount_percentage"
+                  key="item_discount_percentage"
                   render={(discount: number) => (
                     <Typography.Text>{`${discount}%`}</Typography.Text>
                   )}
@@ -268,7 +268,7 @@ export const InvoicesPageShow = () => {
                   <Typography.Text className={styles.labelTotal}>
                     Tax:
                   </Typography.Text>
-                  <Typography.Text>{invoice?.tax || 0}%</Typography.Text>
+                  <Typography.Text>{invoice?.tax_percentage || 0}%</Typography.Text>
                 </Flex>
                 <Divider
                   style={{
