@@ -5,7 +5,7 @@ import { handleRequest, api } from "./zatcaApis.js"; // your API helper
 const router = express.Router();
 const ZATCA_API_BASE_URL = process.env.ZATCA_BACKEND_BASE_URL;
 
-const ALLOWED_STATUSES = ["Validated W", "Validated"];
+const ALLOWED_STATUSES = ["Validated W", "Validated", "ZatcaReportingFailed"];
 
 router.post("/", async (req, res) => {
     try {
@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
         }
 
         if (invoicesWithInfo.length === 0) {
-            return res.status(200).json({ invalidInvoices, message: "No valid invoices to process" });
+            return res.status(500).json({ invalidInvoices, message: "No valid invoices to process" });
         }
 
         // Step 2: Send to ZATCA backend
@@ -72,7 +72,7 @@ router.post("/", async (req, res) => {
                 const errors = (resItem.zatcaErrorMessages || []).map(e => JSON.stringify(e));
                 const warnings = (resItem.zatcaWarningMessages || []).map(w => JSON.stringify(w));
 
-                let status = "ValidationFailed";
+                let status = "ZatcaReportingFailed";
 
                 if (resItem.invoiceType?.includes("Standard")) {
                     if (clearance === "CLEARED" && errors.length === 0 && warnings.length === 0) {

@@ -5,7 +5,7 @@ import { handleRequest, api } from "./zatcaApis.js"; // your API helper
 const router = express.Router();
 const ZATCA_API_BASE_URL = process.env.ZATCA_BACKEND_BASE_URL;
 
-const ALLOWED_STATUSES = ["Draft", "Validated W", "Validated", "ValidationFailed"];
+const ALLOWED_STATUSES = ["Draft", "Validated W", "Validated", "ValidationFailed", "ZatcaReportingFailed"];
 
 router.post("/", async (req, res) => {
     try {

@@ -62,7 +62,7 @@ class InvoiceBuilder {
                 chargeIndicator: false,
                 allowanceChargeReason: "discount",
                 amount: {
-                    value: Helper.toTwoDecimalsString(reqBody.total_discount_amount),
+                    value: Helper.roundHalfUp(reqBody.total_discount_amount, 2),
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxCategory: {
@@ -95,27 +95,27 @@ class InvoiceBuilder {
         const taxTotal = [
             {
                 taxAmount: {
-                    value: totalTaxAmount.toFixed(2), // e.g. "0.6"
+                    value: Helper.roundHalfUp(totalTaxAmount,2), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
             },
             {
                 taxAmount: {
-                    value: totalTaxAmount.toFixed(2), // e.g. "0.6"
+                    value: Helper.roundHalfUp(totalTaxAmount,2), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxSubtotal: {
                     taxableAmount: {
-                        value: Helper.toTwoDecimalsString(reqBody.subtotal), // e.g. "4.00"
+                        value: Helper.roundHalfUp(reqBody.subtotal, 2), // e.g. "4.00"
                         currencyId: reqBody.currency || "SAR",
                     },
                     taxAmount: {
-                        value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.60"
+                        value: Helper.roundHalfUp(totalTaxAmount, 2), // e.g. "0.60"
                         currencyId: reqBody.currency || "SAR",
                     },
                     taxCategory: {
                         id: reqBody.tax_category, // e.g. "S"
-                        percent: Helper.toTwoDecimalsString(reqBody.tax_percentage), // e.g. "15.00"
+                        percent: reqBody.tax_percentage.toFixed(2), // e.g. "15.00"
                         taxScheme: {
                             id: taxScheme,
                         },
@@ -142,27 +142,27 @@ class InvoiceBuilder {
         // Build legalMonetaryTotal
         const legalMonetaryTotal = {
             lineExtensionAmount: {
-                value: Helper.toTwoDecimalsString(totalWithoutDiscount),   // e.g. "4.00"
+                value:  Helper.roundHalfUp(totalWithoutDiscount, 2),   // e.g. "4.00"
                 currencyId: reqBody.currency || "SAR",
             },
             taxExclusiveAmount: {
-                value: Helper.toTwoDecimalsString(totalAfterDiscountAndSurcharge),   // e.g. "4.00"
+                value: Helper.roundHalfUp(totalAfterDiscountAndSurcharge, 2),   // e.g. "4.00"
                 currencyId: reqBody.currency || "SAR",
             },
             taxInclusiveAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.total),   // e.g. "4.60"
+                value: Helper.roundHalfUp(reqBody.total, 2),   // e.g. "4.60"
                 currencyId: reqBody.currency || "SAR",
             },
             allowanceTotalAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.total_discount_amount) || "0.00",
+                value: Helper.roundHalfUp(reqBody.total_discount_amount, 2) || "0.00",
                 currencyId: reqBody.currency || "SAR",
             },
             prepaidAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.prepaid_amount) || "0.00",
+                value: Helper.roundHalfUp(reqBody.prepaid_amount, 2) || "0.00",
                 currencyId: reqBody.currency || "SAR",
             },
             payableAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.total),         // e.g. "4.60"
+                value: Helper.roundHalfUp(reqBody.total, 2),         // e.g. "4.60"
                 currencyId: reqBody.currency || reqBody.currency || "SAR",
             },
         };

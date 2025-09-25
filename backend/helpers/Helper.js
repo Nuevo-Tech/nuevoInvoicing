@@ -83,27 +83,27 @@ class Helper {
 // ]
     static buildInvoiceLines(items, currency, taxCateogory, taxPercentage, taxScheme) {
         return items.map((item, index) => {
-            const lineExtensionAmount = item.unitPrice * item.quantity; // total before tax
-            const taxAmount = (item.unitPrice * item.quantity * taxPercentage) / 100;
-            const roundingAmount = this.roundHalfUp(item.unitPrice * item.quantity) + taxAmount;
+            const lineExtensionAmount = this.roundHalfUp(item.unitPrice * item.quantity, 2); // total before tax
+            const taxAmount = this.roundHalfUp((item.unitPrice * item.quantity * taxPercentage) / 100, 2);
+            const roundingAmount = lineExtensionAmount + taxAmount;
 
             return {
                 id: String(index + 1),
                 invoicedQuantity: {
-                    value: item.quantity.toFixed(6), // UBL needs 6 decimals
+                    value: item.quantity, // UBL needs 6 decimals
                     unitCode: item.unitCode || "PCE",
                 },
                 lineExtensionAmount: {
-                    value: lineExtensionAmount.toFixed(2),
+                    value: lineExtensionAmount,
                     currencyId: currency,
                 },
                 taxTotal: {
                     taxAmount: {
-                        value: taxAmount.toFixed(2),
+                        value: taxAmount,
                         currencyId: currency,
                     },
                     roundingAmount: {
-                        value: roundingAmount.toFixed(2),
+                        value: this.roundHalfUp(roundingAmount, 2),
                         currencyId: currency,
                     },
                 },
@@ -119,7 +119,7 @@ class Helper {
                 },
                 price: {
                     priceAmount: {
-                        value: item.unitPrice.toFixed(2),
+                        value: item.unitPrice,
                         currencyId: currency,
                     },
                 },
