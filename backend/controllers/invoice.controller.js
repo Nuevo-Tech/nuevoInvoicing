@@ -101,6 +101,7 @@ const getAllInvoices = async (req, res) => {
 
         queryBuilder = queryBuilder.populate([{path: "client"}]);
         queryBuilder = queryBuilder.populate([{path: "account"}]);
+        queryBuilder = queryBuilder.populate([{path: "myOrgProfile"}]);
         queryBuilder = queryBuilder.populate([{path: "services"}]);
 
         const totalCount = await Invoice.countDocuments(query);
@@ -120,7 +121,8 @@ const getInvoiceDetail = async (req, res) => {
     const invoiceExists = await Invoice.findOne({id: id})
         .populate("account")
         .populate("client")
-        .populate("services");
+        .populate("services")
+        .populate("myOrgProfile");
     if (invoiceExists) {
         res.status(200).json(invoiceExists);
     } else {
@@ -208,6 +210,7 @@ const createInvoice = async (req, res) => {
             invoice_name,
             account,
             client,
+            myOrgProfile,
             services: serviceDocs.map((s) => s._id),
             status: "Draft",
             invoiceDate: invoiceDate ? new Date(invoiceDate) : null,

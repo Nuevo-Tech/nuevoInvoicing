@@ -10,6 +10,10 @@ const InvoiceSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Account",
         },
+        myOrgProfile: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "MyOrgProfile",
+        },
         services: [{type: mongoose.Schema.Types.ObjectId, ref: "Service"}],
         creator: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
         status: {type: String, required: true},

@@ -11,7 +11,8 @@ import {
 import {Invoice} from "../../types/index";
 import QRCode from "qrcode";
 import React from "react";
-import { Font } from "@react-pdf/renderer";
+import {Font} from "@react-pdf/renderer";
+import {styles} from "./stylesheet";
 
 Font.register({
     family: "Amiri",
@@ -20,7 +21,7 @@ Font.register({
 
 // Optional: register bold/italic if needed
 Font.register({
-    family: "Amiri",
+    family: "Amiri-Bold",
     src: "/fonts/Amiri-Bold.ttf",
     fontWeight: "bold",
 });
@@ -49,65 +50,170 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
     return (
         <PDFViewer style={styles.viewer}>
             <Document>
-                <Page style={styles.page} size="A4">
-                    <View>
-                        <Image
-                            src={API_URL + "/api/v1" + record?.account?.logo}
-                            style={{width: "70px", height: "auto"}}
-                        />
-                        <View style={styles.inoviceTextNumberContainer}>
-                            <Text style={styles.inoviceText}>
-                                {`Invoice: ${record?.id}${record?.invoice_name}`}
-                            </Text>
-                            <Text
-                                style={styles.inoviceId}
-                            >{`Invoice ID: INVOICE_#${record?.id}`}</Text>
+                <Page style={styles.page} size="A3">
+                    {/* Header Section */}
+                    <View style={styles.headerSection}>
+                        <View style={styles.companyInfo}>
+                            {record?.account?.logo && (
+                                <Image src={record.account.logo} style={styles.logo}/>
+                            )}
+                            <Text style={styles.companyName}>{"SyncShire Enterprises"}</Text>
+                        </View>
+
+                        <View style={{flex: 2, justifyContent: "center"}}>
+                            {qrCodeDataUrl && (
+                                <Image src={qrCodeDataUrl} style={styles.qrCode}/>
+                            )}
+                        </View>
+
+
+                        {/* Row 1 */}
+                        <View style={{flex: 3}}>
+                            <View style={[styles.row1, {justifyContent: "flex-end"}]}>
+                                <Text style={[styles.cell, styles.leftCell, styles.bolded]}>Invoice Id</Text>
+                                <Text style={styles.cell}>{record?.invoice_id}</Text>
+                                <Text style={[styles.cell, styles.rightCell, styles.cellArabic]}>رقم الفاتورة</Text>
+                            </View>
+
+
+                            {[
+                                {label: "Invoice Id", value: record?.invoice_id, arabic: "رقم الفاتورة"},
+                                {label: "Invoice Name", value: record?.invoice_name, arabic: "رقم الفاتورة"},
+                                {
+                                    label: "Date & Time",
+                                    value: record?.invoiceDate ? new Date(record.invoiceDate).toLocaleString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    }) : "",
+                                    arabic: "التاريخ والوقت"
+                                },
+                                {
+                                    label: "Delivery Date",
+                                    value: record?.deliveryDate ? new Date(record.deliveryDate).toLocaleDateString("en-GB") : "",
+                                    arabic: "تاريخ التسليم"
+                                },
+                                {label: "Tax Category", value: record?.tax_category, arabic: "فئة الضريبة"},
+                                {label: "Payment Means", value: record?.payment_means, arabic: "طريقة الدفع"}
+                            ].map((row, index) => (
+                                <View key={index} style={[styles.row,]}>
+                                    <Text style={[styles.cell, styles.leftCell, styles.bolded]}>{row.label}</Text>
+                                    <Text style={[styles.cell]}>{row.value}</Text>
+                                    <Text style={[styles.cell, styles.rightCell, styles.cellArabic]}>{row.arabic}</Text>
+                                </View>
+                            ))}
+                            {/* Add more rows here */}
                         </View>
                     </View>
+
+                    {/* Seller Details */}
+                    <View style={styles.partyDetails}>
+                        {/* Seller Box */}
+                        <View style={styles.partyBox}>
+                            <Text style={styles.partyTitle}>Seller Details | بيانات المورد</Text>
+                            {[
+                                {label: "Name", value: record?.myOrgProfile?.partyLegalEntityRegistrationName, arabic: "الاسم"},
+                                {label: "VAT Number", value: record?.myOrgProfile?.partyTaxSchemeCompanyID, arabic: "الرقم الضريبي"},
+                                {label: "Building No.", value: record?.myOrgProfile?.buildingNumber, arabic: "رقم المبنى"},
+                                {label: "Street Name", value: record?.myOrgProfile?.streetName, arabic: "اسم الشارع"},
+                                {label: "City", value: record?.myOrgProfile?.cityName, arabic: "المدينة"},
+                                {label: "City Subdivision", value: record?.myOrgProfile?.citySubdivisionName, arabic: "الحي"},
+                                {label: "Postal Code", value: record?.myOrgProfile?.postalZone, arabic: "الرمز البريدي"},
+                                {label: "Country", value: record?.myOrgProfile?.countryIdentificationCode, arabic: "رمز الدولة"},
+                                {label: "Commercial Registration (CRN)", value: record?.myOrgProfile?.partyId, arabic: "نوع الهوية"},
+                            ].map((row, i) => (
+                                <View style={styles.row} key={i}>
+                                    <Text style={[styles.cell, styles.leftCell, styles.bolded]}>{row.label}</Text>
+                                    <Text style={[styles.cell, styles.cellArabic]}>{row.value}</Text>
+                                    <Text style={[styles.cell, styles.rightCell, styles.cellArabic]}>{row.arabic}</Text>
+                                </View>
+                            ))}
+                        </View>
+
+                        {/* Buyer Box */}
+                        <View style={styles.partyBox}>
+                            <Text style={styles.partyTitle}>Buyer Details | بيانات العميل</Text>
+                            {[
+                                {
+                                    label: "Name",
+                                    value: record?.client?.partyLegalEntityRegistrationName,
+                                    arabic: "الاسم"
+                                },
+                                {label: "VAT Number", value: record?.client?.partyTaxSchemeCompanyID, arabic: "الرقم الضريبي"},
+                                {label: "Building No.", value: record?.client?.buildingNumber, arabic: "رقم المبنى"},
+                                {label: "Street Name", value: record?.client?.streetName, arabic: "اسم الشارع"},
+                                {label: "City", value: record?.client?.cityName, arabic: "المدينة"},
+                                {label: "City Subdivision", value: record?.client?.citySubdivisionName, arabic: "الحي"},
+                                {label: "Postal Code", value: record?.client?.postalZone, arabic: "الرمز البريدي"},
+                                {label: "Country", value: record?.client?.countryIdentificationCode, arabic: "رمز الدولة"},
+                                {label: "Commercial Registration Number (CRN)", value: "", arabic: ""},
+                            ].map((row, i) => (
+                                <View style={styles.row} key={i}>
+                                    <Text style={[styles.cell, styles.leftCell, styles.bolded]}>{row.label}</Text>
+                                    <Text style={[styles.cell, styles.cellArabic]}>{row.value}</Text>
+                                    <Text style={[styles.cell, styles.rightCell, styles.cellArabic]}>{row.arabic}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+
                     <View style={styles.divider}/>
 
-                    <View style={styles.inoviceForFromContainer}>
-                        <View>
-                            <Text style={styles.inoviceForFromTitle}>From:</Text>
-                            <View>
-                                <Text style={styles.inoviceForFromText}>
-                                    {record?.account?.account_name}
-                                </Text>
-                                <Text style={styles.inoviceForFromText}>
-                                    {record?.account?.address}, {record?.account?.country}
-                                </Text>
-                            </View>
-                        </View>
+                    {/*<View style={styles.inoviceForFromContainer}>*/}
+                    {/*    <View>*/}
+                    {/*        <Text style={styles.inoviceForFromTitle}>From:</Text>*/}
+                    {/*        <View>*/}
+                    {/*            <Text style={styles.inoviceForFromText}>*/}
+                    {/*                {record?.account?.account_name}*/}
+                    {/*            </Text>*/}
+                    {/*            <Text style={styles.inoviceForFromText}>*/}
+                    {/*                {record?.account?.address}, {record?.account?.country}*/}
+                    {/*            </Text>*/}
+                    {/*        </View>*/}
+                    {/*    </View>*/}
 
-                        <View>
-                            <Text style={styles.inoviceForFromTitle}>Inovice For:</Text>
-                            <View>
-                                <Text style={styles.inoviceForFromText}>
-                                    {record?.client?.partyLegalEntityRegistrationName}
-                                </Text>
-                                {/* <Text style={styles.inoviceForFromText}>
-                  {record?.client?.first_name}
-                </Text>
-                <Text style={styles.inoviceForFromText}>
-                  {record?.client?.last_name}
-                </Text> */}
-                                <Text style={styles.inoviceForFromText}>
-                                    {record?.client?.cityName}
-                                </Text>
-                            </View>
-                            <View>
-                                <Text
-                                    style={styles.inoviceForFromText}
-                                >{`Invoice ID: ${record?.id}`}</Text>
-                                {/*<Text*/}
-                                {/*  style={styles.inoviceForFromText}*/}
-                                {/*>{`Invoice Custom ID: ${record?.custom_id}`}</Text>*/}
-                                <Text
-                                    style={styles.inoviceForFromText}
-                                >{`Invoice Date: ${record?.invoiceDate}`}</Text>
-                            </View>
-                        </View>
-                    </View>
+                    {/*<View>*/}
+                    {/*    <Text style={styles.inoviceForFromTitle}>Inovice For:</Text>*/}
+                    {/*    <View>*/}
+                    {/*        <Text style={styles.inoviceForFromText}>*/}
+                    {/*            {record?.client?.partyLegalEntityRegistrationName}*/}
+                    {/*        </Text>*/}
+                    {/*                /!* <Text style={styles.inoviceForFromText}>*/}
+                    {/*  {record?.client?.first_name}*/}
+                    {/*</Text>*/}
+                    {/*<Text style={styles.inoviceForFromText}>*/}
+                    {/*  {record?.client?.last_name}*/}
+                    {/*</Text> *!/*/}
+                    {/*                <Text style={styles.inoviceForFromText}>*/}
+                    {/*                    {record?.client?.cityName}*/}
+                    {/*                </Text>*/}
+                    {/*            </View>*/}
+                    {/*            <View>*/}
+                    {/*                <Text*/}
+                    {/*                    style={styles.inoviceForFromText}*/}
+                    {/*                >{`Invoice ID: ${record?.id}`}</Text>*/}
+                    {/*                /!*<Text*!/*/}
+                    {/*                /!*  style={styles.inoviceForFromText}*!/*/}
+                    {/*                /!*>{`Invoice Custom ID: ${record?.custom_id}`}</Text>*!/*/}
+                    {/*                <Text*/}
+                    {/*                    style={styles.inoviceForFromText}*/}
+                    {/*                >{`Invoice Date: ${*/}
+                    {/*                    record?.invoiceDate*/}
+                    {/*                        ? new Date(record.invoiceDate).toLocaleDateString("en-GB", {*/}
+                    {/*                            day: "2-digit",*/}
+                    {/*                            month: "short",*/}
+                    {/*                            year: "numeric",*/}
+                    {/*                            hour: "2-digit",*/}
+                    {/*                            minute: "2-digit",*/}
+                    {/*                        })*/}
+                    {/*                        : ""*/}
+                    {/*                }`}</Text>*/}
+                    {/*            </View>*/}
+                    {/*        </View>*/}
+                    {/*    </View>*/}
 
                     <View style={styles.table}>
                         <View style={styles.tableHeader}>
@@ -191,140 +297,3 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
         </PDFViewer>
     );
 };
-
-const styles = StyleSheet.create({
-    viewer: {
-        paddingTop: 32,
-        width: "100%",
-        height: "80vh",
-        border: "none",
-    },
-    page: {
-        padding: "0.5in",
-        fontSize: 10,
-        color: "#333",
-        backgroundColor: "#f9f9f9", // Light background for a polished look
-        fontFamily: "Helvetica",
-    },
-    header: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    logo: {
-        width: 100,
-        height: "auto",
-    },
-    headerDetails: {
-        textAlign: "right",
-    },
-    headerText: {
-        fontSize: 14,
-        fontWeight: "bold",
-    },
-    inoviceTextNumberContainer: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 20,
-    },
-    inoviceText: {
-        fontSize: 12,
-        fontWeight: "bold",
-        color: "#333",
-    },
-    inoviceId: {
-        fontSize: 10,
-        color: "#555",
-    },
-    inoviceForFromContainer: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 20,
-    },
-    inoviceForFromTitle: {
-        fontSize: 12,
-        fontWeight: "bold",
-        marginBottom: 5,
-    },
-    inoviceForFromText: {
-        fontFamily: "Amiri",
-        fontSize: 10,
-        color: "#555",
-        marginBottom: 2,
-    },
-    divider: {
-        width: "100%",
-        height: 1,
-        backgroundColor: "#e0e0e0",
-        marginVertical: 10,
-    },
-    table: {
-        marginTop: 20,
-        border: "1px solid #000",
-        borderRadius: 3,
-        overflow: "hidden",
-    },
-    tableHeader: {
-        flexDirection: "row",
-        backgroundColor: "#b9b9b9",
-        paddingVertical: 5,
-        // borderBottom: "1px solid #ddd",
-    },
-    tableHeaderItem: {
-        fontSize: 10,
-        fontWeight: "bold",
-        textAlign: "center",
-        padding: 5,
-        flex: 1,
-    },
-    tableRow: {
-        flexDirection: "row",
-        // borderBottom: "1px solid #ddd",
-    },
-    tableCol: {
-        fontSize: 10,
-        textAlign: "center",
-        padding: 5,
-        flex: 1,
-    },
-    alternateRow: {
-        backgroundColor: "#d9d9d9",
-    },
-    signatureTotalContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 30,
-    },
-    signatureContainer: {
-        flex: 1,
-    },
-    totalContainer: {
-        flex: 1,
-        textAlign: "right",
-    },
-    signatureText: {
-        fontSize: 10,
-        color: "#333",
-        marginBottom: 5,
-    },
-    totalText: {
-        fontSize: 12,
-        fontWeight: "bold",
-        color: "#333",
-        marginBottom: 5,
-    },
-    footer: {
-        borderTop: "1px solid #ddd",
-        marginTop: 30,
-        paddingTop: 10,
-        textAlign: "center",
-    },
-    footerText: {
-        fontSize: 10,
-        color: "#777",
-    },
-});

@@ -52,6 +52,7 @@ export type Invoice = {
     account: Account;
     client: Client;
     services: Service[];
+    myOrgProfile: MyOrgProfile;
     status: string;
     invoice_name: string
     invoiceDate: string;
