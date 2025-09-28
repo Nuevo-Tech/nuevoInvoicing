@@ -65,6 +65,7 @@ export type Invoice = {
     note: string;
 
     invoice_id: string;
+    reference_number: string;
     uuid: string
     invoice_type_code_value: string;
     invoice_type_code_name: string;

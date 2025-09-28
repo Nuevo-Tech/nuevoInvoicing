@@ -107,7 +107,6 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
 
 
                             {[
-                                {label: "Invoice Id", value: record?.invoice_id, arabic: "رقم الفاتورة"},
                                 {label: "Invoice Name", value: record?.invoice_name, arabic: "رقم الفاتورة"},
                                 {
                                     label: "Date & Time",
@@ -126,7 +125,8 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
                                     arabic: "تاريخ التسليم"
                                 },
                                 {label: "Tax Category", value: record?.tax_category, arabic: "فئة الضريبة"},
-                                {label: "Payment Means", value: record?.payment_means, arabic: "طريقة الدفع"}
+                                {label: "Payment Means", value: record?.payment_means, arabic: "طريقة الدفع"},
+                                {label: "Invoice Reference", value: record?.reference_number, arabic: "المرجع"}
                             ].map((row, index) => (
                                 <View key={index} style={[styles.row,]}>
                                     <Text style={[styles.cell, styles.leftCell, styles.bolded]}>{row.label}</Text>
