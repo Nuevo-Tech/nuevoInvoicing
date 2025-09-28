@@ -66,7 +66,7 @@ class InvoiceBuilder {
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxCategory: {
-                    id: reqBody.tax_category,
+                    id: reqBody.tax_category.split("-")[0],
                     percent: reqBody.tax_percentage.toString(),
                     taxScheme: {id: taxScheme},
                 }
@@ -84,7 +84,7 @@ class InvoiceBuilder {
         //             currencyId: reqBody.currency || reqBody.currency || "SAR",
         //         },
         //         taxCategory: {
-        //             id: reqBody.tax_category,
+        //             id: reqBody.tax_category.split("-")[0],
         //             percent: reqBody.tax_percentage,
         //             taxScheme: {id: taxScheme},
         //         },
@@ -114,7 +114,7 @@ class InvoiceBuilder {
                         currencyId: reqBody.currency || "SAR",
                     },
                     taxCategory: {
-                        id: reqBody.tax_category, // e.g. "S"
+                        id: reqBody.tax_category.split("-")[0], // e.g. "S"
                         percent: reqBody.tax_percentage.toFixed(2), // e.g. "15.00"
                         taxScheme: {
                             id: taxScheme,
@@ -180,7 +180,7 @@ class InvoiceBuilder {
             accountingSupplierParty: supplierDetails,
             accountingCustomerParty: customerDetails,
             "delivery.actualDeliveryDate": Helper.formatDateToZatca(reqBody.deliveryDate),
-            "paymentMeans.paymentMeansCode": reqBody.payment_means,
+            "paymentMeans.paymentMeansCode": reqBody.payment_means.split("-")[0],
             allowanceCharge: allowanceCharge,
             taxTotal: taxTotal,
             legalMonetaryTotal: legalMonetaryTotal,

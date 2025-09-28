@@ -110,7 +110,7 @@ class Helper {
                 item: {
                     name: item.name,
                     classifiedTaxCategory: {
-                        id: taxCateogory, // Standard-rated
+                        id: taxCateogory.split("-")[0], // Standard-rated
                         percent: taxPercentage.toFixed(2),
                         taxScheme: {
                             id: taxScheme,
