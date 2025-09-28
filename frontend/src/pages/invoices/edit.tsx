@@ -799,6 +799,7 @@ export const InvoicesPageEdit = () => {
                                                     name: "",
                                                     unitPrice: 0,
                                                     unitCode: "",
+                                                    item_code:"",
                                                     quantity: 0,
                                                     price_without_discount: 0,
                                                     item_discount_percentage: 0,

@@ -26,16 +26,46 @@ Font.register({
     fontWeight: "bold",
 });
 
+const getFontFamily = (text: string) => {
+    // Arabic Unicode range: 0600–06FF
+    const arabicRegex = /[\u0600-\u06FF]/;
+    return arabicRegex.test(text) ? "Amiri" : "Helvetica";
+};
+
+
 const API_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
 type PdfProps = {
     record: Invoice | undefined;
 };
 
+// half-up rounding
+function roundHalfUp(num: number, decimals = 2): number {
+    const factor = Math.pow(10, decimals);
+    return Math.round(num * factor) / factor;
+}
+
+// return parts for display; decimals param controls fractional digits
+function formatNumberParts(value: number | string | undefined, decimals = 2) {
+    const n = Number(value || 0);
+    const rounded = roundHalfUp(n, decimals);
+    const s = rounded.toFixed(decimals); // always returns string with trailing zeros
+    const [intPart, fracPart] = s.split(".");
+    // we include the decimal point together with fractional part so it visually sticks to integer
+    return { intPart, fracPart: "." + (fracPart ?? "".padEnd(decimals, "0")) };
+}
+
 export const PdfLayout: React.FC<PdfProps> = ({record}) => {
     const logoUrl = record?.account?.logo
         ? `${API_URL}${record?.account?.logo}`
         : undefined;
+
+    const summaryData = [
+        { en: "Sub Total", ar: "الإجمالي", value: record?.subtotal },
+        { en: "Discount", ar: "الخصم", value: record?.total_discount_amount },
+        { en: "VAT 15%", ar: "الضريبة", value: record?.tax_percentage },
+        { en: "Net Total", ar: "المجموع", value: record?.total },
+    ];
 
     const [qrCodeDataUrl, setQrCodeDataUrl] = React.useState<string | null>(null);
 
@@ -158,138 +188,120 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
                             ))}
                         </View>
                     </View>
-
-
                     <View style={styles.divider}/>
 
-                    {/*<View style={styles.inoviceForFromContainer}>*/}
-                    {/*    <View>*/}
-                    {/*        <Text style={styles.inoviceForFromTitle}>From:</Text>*/}
-                    {/*        <View>*/}
-                    {/*            <Text style={styles.inoviceForFromText}>*/}
-                    {/*                {record?.account?.account_name}*/}
-                    {/*            </Text>*/}
-                    {/*            <Text style={styles.inoviceForFromText}>*/}
-                    {/*                {record?.account?.address}, {record?.account?.country}*/}
-                    {/*            </Text>*/}
-                    {/*        </View>*/}
-                    {/*    </View>*/}
-
-                    {/*<View>*/}
-                    {/*    <Text style={styles.inoviceForFromTitle}>Inovice For:</Text>*/}
-                    {/*    <View>*/}
-                    {/*        <Text style={styles.inoviceForFromText}>*/}
-                    {/*            {record?.client?.partyLegalEntityRegistrationName}*/}
-                    {/*        </Text>*/}
-                    {/*                /!* <Text style={styles.inoviceForFromText}>*/}
-                    {/*  {record?.client?.first_name}*/}
-                    {/*</Text>*/}
-                    {/*<Text style={styles.inoviceForFromText}>*/}
-                    {/*  {record?.client?.last_name}*/}
-                    {/*</Text> *!/*/}
-                    {/*                <Text style={styles.inoviceForFromText}>*/}
-                    {/*                    {record?.client?.cityName}*/}
-                    {/*                </Text>*/}
-                    {/*            </View>*/}
-                    {/*            <View>*/}
-                    {/*                <Text*/}
-                    {/*                    style={styles.inoviceForFromText}*/}
-                    {/*                >{`Invoice ID: ${record?.id}`}</Text>*/}
-                    {/*                /!*<Text*!/*/}
-                    {/*                /!*  style={styles.inoviceForFromText}*!/*/}
-                    {/*                /!*>{`Invoice Custom ID: ${record?.custom_id}`}</Text>*!/*/}
-                    {/*                <Text*/}
-                    {/*                    style={styles.inoviceForFromText}*/}
-                    {/*                >{`Invoice Date: ${*/}
-                    {/*                    record?.invoiceDate*/}
-                    {/*                        ? new Date(record.invoiceDate).toLocaleDateString("en-GB", {*/}
-                    {/*                            day: "2-digit",*/}
-                    {/*                            month: "short",*/}
-                    {/*                            year: "numeric",*/}
-                    {/*                            hour: "2-digit",*/}
-                    {/*                            minute: "2-digit",*/}
-                    {/*                        })*/}
-                    {/*                        : ""*/}
-                    {/*                }`}</Text>*/}
-                    {/*            </View>*/}
-                    {/*        </View>*/}
-                    {/*    </View>*/}
-
+                    {/* Items Table */}
                     <View style={styles.table}>
                         <View style={styles.tableHeader}>
-                            <Text style={[styles.tableHeaderItem, {width: "20%"}]}>
-                                Services/Product
+                            <Text style={[styles.th, { flex: 0.5 }]}>
+                                {`الرقم\nSl. No`}
                             </Text>
-                            <Text style={[styles.tableHeaderItem, {width: "20%"}]}>
-                                Quantity
+                            <Text style={[styles.th, { flex: 1 }]}>
+                                {`رمز العنصر\nItem Code`}
                             </Text>
-                            <Text style={[styles.tableHeaderItem, {width: "20%"}]}>
-                                Price PerItem
+                            <Text style={[styles.th, { flex: 2 }]}>
+                                {`الوصف\nDescription`}
                             </Text>
-                            <Text style={[styles.tableHeaderItem, {width: "20%"}]}>
-                                Discount
+                            <Text style={[styles.th, { flex: 1 }]}>
+                                {`الكمية\nQty`}
                             </Text>
-                            <Text style={[styles.tableHeaderItem, {width: "20%"}]}>
-                                Total
+                            <Text style={[styles.th, { flex: 1 }]}>
+                                {`سعر الوحدة\nUnit Price`}
+                            </Text>
+                            <Text style={[styles.th, { flex: 1 }]}>
+                                {`الخصم (%)\nDiscount (%)`}
+                            </Text>
+                            <Text style={[styles.th, { flex: 1 }]}>
+                                {`الإجمالي\nTotal`}
                             </Text>
                         </View>
-                        {record?.services.map((item, index) => {
+                        {/* Table Rows */}
+                        {record?.services?.map((item, i) => {
+                            // compute displayed parts
+                            const qtyParts = formatNumberParts(item.quantity, 2);           // quantities -> 6 decimals
+                            const unitPriceParts = formatNumberParts(item.unitPrice, 2);   // money -> 2 decimals
+                            const discountParts = formatNumberParts(item.item_discount_amount, 2);
+                            const totalParts = formatNumberParts(item.totalPrice, 2);
+
                             return (
-                                <View
-                                    key={item.name}
-                                    style={[
-                                        styles.tableRow,
-                                        ...(index % 2 === 1 ? [styles.alternateRow] : []),
-                                    ]}
-                                >
-                                    <Text style={[styles.tableCol, {width: "20%"}]}>
-                                        {item.name}
-                                    </Text>
-                                    <Text style={[styles.tableCol, {width: "20%"}]}>
-                                        {item?.unitPrice}
-                                    </Text>
-                                    <Text style={[styles.tableCol, {width: "20%"}]}>
-                                        {item?.quantity}
-                                    </Text>
-                                    <Text style={[styles.tableCol, {width: "20%"}]}>
-                                        {item?.item_discount_percentage}
-                                    </Text>
-                                    <Text style={[styles.tableCol, {width: "20%"}]}>
-                                        {item?.totalPrice}
-                                    </Text>
+                                <View key={i} style={styles.tableRow}>
+                                    <View style={[styles.td, { flex: 0.5, justifyContent: "center" }]}>
+                                        <Text style={styles.cellText}>{i + 1}</Text>
+                                    </View>
+
+                                    <View style={[styles.td, { flex: 1 }]}>
+                                        <Text style={styles.cellText}>{item.item_code}</Text>
+                                    </View>
+
+                                    <View style={[styles.td, { flex: 2, paddingLeft: 4 }]}>
+                                        <Text style={styles.cellText}>{item.name}</Text>
+                                    </View>
+
+                                    {/* Quantity (2 decimals) */}
+                                    <View style={[styles.td, { flex: 1 }]}>
+                                        <View style={styles.numberCell}>
+                                            <Text style={styles.numberInt}>{qtyParts.intPart}</Text>
+                                            <Text style={styles.numberDec6}>{qtyParts.fracPart}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Unit Price (2 decimals) */}
+                                    <View style={[styles.td, { flex: 1 }]}>
+                                        <View style={styles.numberCell}>
+                                            <Text style={styles.numberInt}>{unitPriceParts.intPart}</Text>
+                                            <Text style={styles.numberDec}>{unitPriceParts.fracPart}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Discount (2 decimals) */}
+                                    <View style={[styles.td, { flex: 1 }]}>
+                                        <View style={styles.numberCell}>
+                                            <Text style={styles.numberInt}>{discountParts.intPart}</Text>
+                                            <Text style={styles.numberDec}>{discountParts.fracPart}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Total (2 decimals) */}
+                                    <View style={[styles.td, { flex: 1 }]}>
+                                        <View style={styles.numberCell}>
+                                            <Text style={styles.numberInt}>{totalParts.intPart}</Text>
+                                            <Text style={styles.numberDec}>{totalParts.fracPart}</Text>
+                                        </View>
+                                    </View>
                                 </View>
                             );
                         })}
                     </View>
 
-                    <View style={styles.signatureTotalContainer}>
-                        <View style={styles.signatureContainer}>
-                            <Text style={styles.signatureText}>
-                                Signature: ________________
-                            </Text>
-                            <Text style={styles.signatureText}>
-                                Date: {record?.invoiceDate.toString()}
-                            </Text>
-                        </View>
+                    <View style={styles.summaryTable}>
+                        {summaryData.map((row, i) => {
+                            const { intPart, fracPart } = formatNumberParts(row.value, 2);
 
-                        <View style={styles.totalContainer}>
-                            <Text style={styles.totalText}>SUBTOTAL: {record?.subtotal}</Text>
-                            <Text style={styles.totalText}>
-                                Discount(%): {record?.discount_percentage}
-                            </Text>
-                            <Text style={styles.totalText}>Tax(%): {record?.tax_percentage}</Text>
-                            <Text style={styles.totalText}>Total($): {record?.total}</Text>
-                        </View>
+                            return (
+                                <View key={i} style={styles.summaryRow}>
+                                    {/* Label cell */}
+                                    <View style={styles.labelCell}>
+                                        <Text>
+                                            <Text style={styles.labelEn}>{row.en} </Text>
+                                            <Text style={styles.labelAr}>{row.ar}</Text>
+                                        </Text>
+                                    </View>
+
+                                    {/* Value cell */}
+                                    <View style={styles.valueCell}>
+                                        <Text>
+                                            {intPart}
+                                            <Text>{fracPart}</Text>
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
                     </View>
-                    <View>
-                        {qrCodeDataUrl && (
-                            <Image src={qrCodeDataUrl} style={{width: 100, height: 100}}/>
-                        )}
-                    </View>
+
                     <View style={styles.footer}>
-                        {/* <Text style={styles.footerText}>{record?.account?.city}</Text> */}
                         <Text style={styles.footerText}>
-                            {record?.account.address}, {record?.account.country}
+                            {record?.myOrgProfile?.cityName},
                         </Text>
                     </View>
                 </Page>

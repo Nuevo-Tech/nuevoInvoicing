@@ -73,6 +73,7 @@ export const styles = StyleSheet.create({
     leftCell: {borderLeftWidth: 1,},
     rightCell: {borderRightWidth: 1,},
     cellArabic: { fontFamily: "Amiri", textAlign: "right", padding: 1},
+    cellCenterArabic: { fontFamily: "Amiri", textAlign: "right", padding: 1},
     partyDetails: {flexDirection: "row", marginTop: 5,},
     partyBox: {flex: 1, padding: 1},
     partyTitle: {
@@ -86,10 +87,13 @@ export const styles = StyleSheet.create({
         bordrLeftWidth: 1,
         borderRightWidth: 1,
         borderLeftWidth: 1,
+        backgroundColor: "#b9b9b9",
     },
     partyText: {fontSize: 10, marginBottom: 2, fontFamily: "Amiri"},
 
     bolded: {fontFamily: "Helvetica-Bold"},
+
+    titleColor: {backgroundColor: "#b9b9b9"},
 
     headerDetails: {
         textAlign: "right",
@@ -113,58 +117,96 @@ export const styles = StyleSheet.create({
         fontSize: 10,
         color: "#555",
     },
-    inoviceForFromContainer: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 20,
-    },
-    inoviceForFromTitle: {
-        fontSize: 12,
-        fontWeight: "bold",
-        marginBottom: 5,
-    },
-    inoviceForFromText: {
-        fontFamily: "Amiri",
-        fontSize: 10,
-        color: "#555",
-        marginBottom: 2,
-    },
     divider: {
         width: "100%",
         height: 1,
         backgroundColor: "#e0e0e0",
         marginVertical: 10,
     },
-    table: {
-        marginTop: 20,
-        border: "1px solid #000",
-        borderRadius: 3,
-        overflow: "hidden",
-    },
-    tableHeader: {
+
+
+
+
+
+
+    table: { marginTop: 15, border: "1px solid #000" },
+    tableHeader: { flexDirection: "row", backgroundColor: "#b9b9b9", borderBottom: "1px solid #000", textAlign: "center" },
+    th: { fontSize: 12, fontWeight: "bold", padding: 4, borderRight: "1px solid #000", fontFamily: "Amiri-Bold" },
+    tableRow: { flexDirection: "row", borderBottom: "1px solid #000" },
+    td: { fontSize: 10, padding: 4, borderRight: "1px solid #000" },
+
+    // add these to your existing styles object (StyleSheet.create)
+    numberCell: {
         flexDirection: "row",
-        backgroundColor: "#b9b9b9",
-        paddingVertical: 5,
-        // borderBottom: "1px solid #ddd",
+        alignItems: "flex-end", // align baseline-ish (decimal sits slightly lower)
+        width: "100%",
     },
-    tableHeaderItem: {
-        fontSize: 10,
-        fontWeight: "bold",
-        textAlign: "center",
-        padding: 5,
+    numberInt: {
         flex: 1,
+        textAlign: "right",
+        fontSize: 10,
+        fontFamily: "Helvetica", // or your numeric font
     },
-    tableRow: {
+// decimal part for 2 decimals (e.g. ".31")
+    numberDec: {
+        width: 22,                // fixed width for ".XX" -> tweak if you use larger font
+        textAlign: "left",
+        fontSize: 10,
+        fontFamily: "Helvetica",
+        paddingLeft: 2,
+    },
+// decimal part for 6-decimal quantities (wider)
+    numberDec6: {
+        width: 44,                // fixed width for ".XXXXXX"
+        textAlign: "left",
+        fontSize: 10,
+        fontFamily: "Helvetica",
+        paddingLeft: 2,
+    },
+    cellText: {
+        fontSize: 10,
+        textAlign: "center",
+        fontFamily: "Helvetica", // or Helvetica for numbers/text as appropriate
+    },
+
+
+    summaryTable: {
+        borderWidth: 1,
+        borderColor: "#000",
+        width: "27%",        // compact table
+        alignSelf: "flex-end",
+        marginTop: 8,  // float to right side
+    },
+    summaryRow: {
         flexDirection: "row",
-        // borderBottom: "1px solid #ddd",
+        borderBottomWidth: 1,
+        borderColor: "#000",
+        minHeight: 22,
     },
-    tableCol: {
-        fontSize: 10,
-        textAlign: "center",
-        padding: 5,
+    labelCell: {
         flex: 1,
+        borderRightWidth: 1,
+        borderColor: "#000",
+        justifyContent: "center",
+        padding: 4,
     },
+    labelEn: {
+        fontFamily: "Helvetica-Bold",
+        fontSize: 10,
+    },
+    labelAr: {
+        fontFamily: "Amiri-Bold",
+        fontSize: 10,
+    },
+    valueCell: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "flex-end",
+        paddingRight:10,
+    },
+
+
+
     alternateRow: {
         backgroundColor: "#d9d9d9",
     },
@@ -191,6 +233,7 @@ export const styles = StyleSheet.create({
         color: "#333",
         marginBottom: 5,
     },
+
     footer: {
         borderTop: "1px solid #ddd",
         marginTop: 30,
@@ -199,6 +242,7 @@ export const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 10,
+        fontFamily:"Amiri-Bold",
         color: "#777",
     },
 });

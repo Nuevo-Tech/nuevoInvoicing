@@ -91,6 +91,7 @@ export type Service = {
     description: string;
     unitPrice: number;
     unitCode: string;
+    item_code: string
     quantity: number;
     price_without_discount: number;
     item_discount_percentage: number;
