@@ -31,14 +31,14 @@ export const Logo = (props: Props) => {
           level={5}
           {...props.titleProps}
         >
-          FlowBit
+          SyncShire
         </Typography.Title>
         <Typography.Title
           className={styles.headerTitleInvoicer}
           level={5}
           {...props.titleProps}
         >
-          {/*FlowBit*/}
+          {/*SyncShire*/}
         </Typography.Title>
       </Flex>
     </Flex>

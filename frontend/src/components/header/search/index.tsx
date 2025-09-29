@@ -5,7 +5,7 @@ import { useList, useNavigation } from "@refinedev/core";
 import { Link } from "react-router-dom";
 import { API_URL } from "@/utils/constants";
 import { getRandomColorFromString } from "@/utils/get-random-color";
-import type { Account, Client } from "@/types";
+import type { Account, Client, Invoice } from "@/types";
 import { useStyles } from "./styled";
 
 type Option =
@@ -14,7 +14,11 @@ type Option =
     })
   | (Client & {
       resource: "clients";
-    });
+    })
+
+    | (Invoice & {
+  resource: "invoices";
+});
 
 export const Search = () => {
   const [searchText, setSearchText] = useState<string>("");
@@ -54,7 +58,7 @@ export const Search = () => {
     },
     filters: [
       {
-        field: "client_name",
+        field: "partyLegalEntityRegistrationName",
         operator: "contains",
         value: searchText,
       },
@@ -66,7 +70,27 @@ export const Search = () => {
       resource: "clients",
     })) || [];
 
-  const options = [...accounts, ...clients];
+  const { data: dataInvoice } = useList<Invoice>({
+    resource: "invoices",
+    pagination: {
+      current: 1,
+      pageSize: 999,
+    },
+    filters: [
+      {
+        field: "invoice_name",
+        operator: "contains",
+        value: searchText,
+      },
+    ],
+  });
+  const invoices =
+      dataInvoice?.data?.map((invoice) => ({
+        ...invoice,
+        resource: "invoices",
+      })) || [];
+
+  const options = [...accounts, ...clients, ...invoices];
 
   return (
     <AutoComplete
@@ -94,7 +118,12 @@ export const Search = () => {
         }
 
         if (data.resource === "clients") {
-          title = data.client_name;
+          title = data.partyLegalEntityRegistrationName;
+          to = editUrl(data.resource, data.id);
+        }
+
+        if (data.resource === "invoices") {
+          title = data.invoice_name;
           to = editUrl(data.resource, data.id);
         }
 

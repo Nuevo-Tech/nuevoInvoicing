@@ -63,7 +63,8 @@ import {
     ProfileOutlined,
 } from "@ant-design/icons";
 import {useAuth0} from "@auth0/auth0-react";
-import {Login} from "./providers/auth-provider/login";
+// import {Login} from "./providers/auth-provider/login";
+import LandingPage from "@/providers/auth-provider/LandinPage";
 import axios from "axios";
 import {BASE_URL_API_V1} from "./utils/urls";
 import AdminPage from "./pages/admin/index";
@@ -328,7 +329,7 @@ const App: React.FC = () => {
                                     </Authenticated>
                                 }
                             >
-                                <Route path="/login" element={<Login/>}/>
+                                <Route path="/login" element={<LandingPage/>}/>
                             </Route>
 
                             <Route

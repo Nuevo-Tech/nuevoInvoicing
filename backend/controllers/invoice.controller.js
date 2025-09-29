@@ -6,7 +6,12 @@ import MyOrgProfile from "../mongodb/models/myorgprofile.js";
 import User from "../mongodb/models/user.js";
 import mongoose from "mongoose";
 import InvoiceBuilder from "../helpers/InvoiceBuilder.js";
+import {createInvoiceZatcaBackend, updateInvoiceZatcaBackend} from "../middleware/zatcaApis.js";
 import axios from "axios";
+import InvoiceCounter from "../mongodb/models/invoicecounter.js";
+
+const ZATCA_API_BASE_URL = process.env.ZATCA_BACKEND_BASE_URL;
+
 
 const roundToTwo = (num) => {
     return Number(Number(num).toFixed(2));
@@ -96,6 +101,7 @@ const getAllInvoices = async (req, res) => {
 
         queryBuilder = queryBuilder.populate([{path: "client"}]);
         queryBuilder = queryBuilder.populate([{path: "account"}]);
+        queryBuilder = queryBuilder.populate([{path: "myOrgProfile"}]);
         queryBuilder = queryBuilder.populate([{path: "services"}]);
 
         const totalCount = await Invoice.countDocuments(query);
@@ -115,7 +121,8 @@ const getInvoiceDetail = async (req, res) => {
     const invoiceExists = await Invoice.findOne({id: id})
         .populate("account")
         .populate("client")
-        .populate("services");
+        .populate("services")
+        .populate("myOrgProfile");
     if (invoiceExists) {
         res.status(200).json(invoiceExists);
     } else {
@@ -128,12 +135,10 @@ const createInvoice = async (req, res) => {
     session.startTransaction();
     try {
         let {
-            id,
-            invoice_id,
             account,
             client,
-            services,
             status,
+            services,
             invoice_name,
             invoiceDate,
             deliveryDate,
@@ -143,13 +148,6 @@ const createInvoice = async (req, res) => {
             tax_scheme_id,
             payment_means,
             note,
-            uuid,
-            invoice_type_code_value,
-            invoice_type_code_name,
-            allowance_charge_indicator,
-            allowance_charge_reason,
-            allowance_charge_amount_value,
-            zatca_qr_code,
             discount,
             tax_percentage,
             subtotal,
@@ -159,7 +157,7 @@ const createInvoice = async (req, res) => {
 
         if (
             !account ||
-            !services.name ||
+            !services.length ||
             !invoice_name ||
             !client ||
             !invoiceDate ||
@@ -169,13 +167,10 @@ const createInvoice = async (req, res) => {
             return res.status(400).json({message: "Missing required fields"});
         }
 
-        // const user = await User.findById(userId);
-        // if (!user) {
-        //     return res.status(404).json({message: "User Not Found"});
-        // }
-
-        // const maxIdInvoice = await Invoice.findOne().sort({id: -1}).select("id");
-        // const nextId = maxIdInvoice ? parseInt(maxIdInvoice.id) + 1 : 1;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({message: "User Not Found"});
+        }
 
         const serviceDocs = await Service.insertMany(
             services.map((service) => ({...service, creator: userId})),
@@ -188,43 +183,43 @@ const createInvoice = async (req, res) => {
         const myOrgProfile = await MyOrgProfile.findOne();
 
         if (!clientDoc) {
-            return res.status(404).json({message:"Client not found for clientId:" + clientDoc });
+            return res.status(404).json({message: "Client not found for clientId:" + clientDoc});
         }
         if (!myOrgProfile) {
-            return res.status(404).json({message:"OrgProfile not found" });
+            return res.status(404).json({message: "OrgProfile not found"});
         }
 
         const builder = new InvoiceBuilder();
 
-        const jsonPayload = await builder.createInvoiceFromRequest(req.body, "new", clientDoc, myOrgProfile);
+        const jsonPayload = await builder.createInvoiceFromRequest(req.body, "new", clientDoc, myOrgProfile, session);
 
-        const response = await axios.get(
-            process.env.CURRENCY_BEACON_BASE_URL + "/convert",
-            {
-                params: {
-                    api_key: process.env.CURRENCY_BEACON_API_KEY,
-                    from: baseCurrency,
-                    to: targetCurrency,
-                    amount: amount,
-                },
-            }
+        const {zatcaStatus, zatcaData} = await createInvoiceZatcaBackend(jsonPayload);
+        if (![200, 202].includes(zatcaStatus)) {
+            return res.status(500).json({data: zatcaData, message: zatcaData?.message || "Failed at backend"});
+        }
+        // assume zatcaData is the JSON response you showed
+        const qrRef = zatcaData?.additionalDocumentReference?.find(
+            (doc) => doc.id === "QR"
         );
+        const qrCode = qrRef?.attachment?.embeddedDocumentBinaryObject?.value;
+
         const newInvoice = new Invoice({
-            id,
-            invoice_id,
-            uuid,
+            id: jsonPayload.id,
+            invoice_id: jsonPayload.id,
+            uuid: jsonPayload.uuid,
             invoice_name,
             account,
             client,
+            myOrgProfile,
             services: serviceDocs.map((s) => s._id),
-            status,
-            invoiceDate,
-            deliveryDate,
+            status: "Draft",
+            invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
+            invoiceTime: jsonPayload.issueTime,
+            deliveryDate: deliveryDate ? new Date(deliveryDate) : null,
             invoice_type,
             tax_category,
             tax_scheme_id,
             payment_means,
-            createdDate: new Date(),
             tax_percentage,
             subtotal,
             total: totalRounded,
@@ -232,13 +227,9 @@ const createInvoice = async (req, res) => {
             note,
             currency,
             creator: userId,
-
-            invoice_type_code_value,
-            invoice_type_code_name,
-            allowance_charge_indicator,
-            allowance_charge_reason,
-            allowance_charge_amount_value,
-            zatca_qr_code,
+            zatca_qr_code: qrCode,
+            invoice_type_code_value: jsonPayload.invoiceTypeCode.value,
+            invoice_type_code_name: jsonPayload.invoiceTypeCode.name,
         });
 
         const savedInvoice = await newInvoice.save({session});
@@ -255,11 +246,13 @@ const createInvoice = async (req, res) => {
             await clientToUpdate.save({session});
         }
 
-        await session.commitTransaction();
 
+        await session.commitTransaction();
         res
             .status(201)
             .json({message: "Invoice created successfully", data: savedInvoice});
+
+
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
@@ -267,6 +260,8 @@ const createInvoice = async (req, res) => {
             return res.status(409).json({message: "Owner email already exists"});
         }
         res.status(500).json({message: error.message});
+    } finally {
+        session.endSession(); // always close session
     }
 };
 
@@ -280,15 +275,20 @@ const updateInvoice = async (req, res) => {
             client,
             invoice_name,
             invoiceDate,
-            status,
-            custom_id,
+            deliveryDate,
+            invoice_type,
+            tax_category,
+            tax_scheme_id,
+            payment_means,
             currency,
             note,
             services,
-            tax,
+            tax_percentage,
+            discount,
             subtotal,
             total,
             userId,
+            status,
         } = req.body;
 
         const user = await User.findById(userId);
@@ -296,14 +296,57 @@ const updateInvoice = async (req, res) => {
             return res.status(404).json({message: "User Not Found"});
         }
 
-        const invoice = await Invoice.findOne({id: id}).session(session);
-        if (!invoice) {
+        const existingInvoice = await Invoice.findOne({id: id}).session(session);
+        if (!existingInvoice) {
             await session.abortTransaction();
             return res.status(404).json({message: "Invoice not found"});
         }
 
+        const forbiddenStatuses = ["ZatcaReported W", "ZatcaReported", "Paid"];
+
+        if (forbiddenStatuses.includes(existingInvoice.status)) {
+            await session.abortTransaction();
+            return res.status(403).json({
+                message: `Invoice cannot be edited in status: ${existingInvoice.status}`
+            });
+        }
+
+        const clientDoc = await Client.findById(client)
+        const myOrgProfile = await MyOrgProfile.findOne();
+
+        if (!clientDoc) {
+            return res.status(404).json({message: "Client not found for clientId:" + clientDoc});
+        }
+        if (!myOrgProfile) {
+            return res.status(404).json({message: "OrgProfile not found"});
+        }
+
+        const mergedReqBody = {
+            ...existingInvoice.toObject(), // fallback to old values
+            ...req.body                    // override with new ones
+        };
+
+        const builder = new InvoiceBuilder();
+
+        const jsonPayload = await builder.createInvoiceFromRequest(mergedReqBody, "update", clientDoc, myOrgProfile, session);
+
+        const {zatcaStatus, zatcaData} = await updateInvoiceZatcaBackend(jsonPayload, existingInvoice.uuid);
+        if (![200, 202].includes(zatcaStatus)) {
+            return res.status(500).json({data: zatcaData, message: zatcaData?.message || "Failed at backend"});
+        }
+        // assume zatcaData is the JSON response you showed
+        const qrRef = zatcaData?.additionalDocumentReference?.find(
+            (doc) => doc.id === "QR"
+        );
+        const qrCode = qrRef?.attachment?.embeddedDocumentBinaryObject?.value;
+        if (qrCode) {
+            console.log("QR Code:", qrCode);
+        } else {
+            console.log("QR Code not found");
+        }
+
         // Extract existing service IDs
-        const existingServiceIds = invoice.services.map((s) => s.toString());
+        const existingServiceIds = existingInvoice.services.map((s) => s.toString());
 
         // Separate services: existing, new, and deleted
         const newServices = services.filter((s) => !s._id); // No ID means new service
@@ -332,28 +375,41 @@ const updateInvoice = async (req, res) => {
 
         let totalRounded = roundToTwo(total);
 
-        // Update the invoice
-        invoice.account = account;
-        invoice.client = client;
-        invoice.invoiceDate = invoiceDate;
-        invoice.services = [
-            ...updatedServices.map((s) => s._id),
-            ...newServiceDocs.map((s) => s._id),
-        ];
-        invoice.tax = tax;
-        invoice.subtotal = subtotal;
-        invoice.total = totalRounded;
-        invoice.status = status;
-        invoice.currency = currency;
-        invoice.invoice_name = invoice_name;
-        invoice.note = note;
-        invoice.custom_id = custom_id;
-        invoice.creator = userId;
+        //update only that are there
+        // Only update if the field exists in the payload
+        if (account !== undefined) existingInvoice.account = account;
+        if (client !== undefined) existingInvoice.client = client;
+        if (invoice_name !== undefined) existingInvoice.invoice_name = invoice_name;
+        if (invoice_type !== undefined) existingInvoice.invoice_type = invoice_type;
+        if (tax_category !== undefined) existingInvoice.tax_category = tax_category;
+        if (tax_scheme_id !== undefined) existingInvoice.tax_scheme_id = tax_scheme_id;
+        if (payment_means !== undefined) existingInvoice.payment_means = payment_means;
+        if (currency !== undefined) existingInvoice.currency = currency;
+        if (note !== undefined) existingInvoice.note = note;
+        if (tax_percentage !== undefined) existingInvoice.tax_percentage = tax_percentage;
+        if (subtotal !== undefined) existingInvoice.subtotal = subtotal;
+        if (discount !== undefined) existingInvoice.discount = discount;
+        if (total !== undefined) existingInvoice.total = totalRounded;
+        if (services !== undefined) {
+            existingInvoice.services = [
+                ...updatedServices.map((s) => s._id),
+                ...newServiceDocs.map((s) => s._id),
+            ];
+        }
+
+        //mandatory should be updated whenever edited
+        existingInvoice.status = "Draft";
+        existingInvoice.invoiceDate = invoiceDate ? new Date(invoiceDate) : null;
+        existingInvoice.invoiceTime = jsonPayload.issueTime;
+        existingInvoice.deliveryDate = deliveryDate ? new Date(deliveryDate) : null;
+        existingInvoice.creator = userId;
+        existingInvoice.zatca_qr_code = qrCode;
+        existingInvoice.invoice_type_code_value = jsonPayload.invoiceTypeCode.value;
+        existingInvoice.invoice_type_code_name = jsonPayload.invoiceTypeCode.name;
 
         try {
-            await invoice.save({session});
+            await existingInvoice.save({session});
         } catch (err) {
-            console.error("Invoice save error:", err);
             await session.abortTransaction();
             return res.status(500).json({message: "Failed to save invoice", error: err.message});
         }
@@ -362,8 +418,8 @@ const updateInvoice = async (req, res) => {
             const accountToUpdate = await Account.findById({_id: account._id}).session(
                 session
             );
-            if (accountToUpdate && !accountToUpdate.invoices.includes(invoice._id)) {
-                accountToUpdate.invoices.push(invoice._id);
+            if (accountToUpdate && !accountToUpdate.invoices.includes(existingInvoice._id)) {
+                accountToUpdate.invoices.push(existingInvoice._id);
                 await accountToUpdate.save({session});
             }
         }
@@ -372,8 +428,8 @@ const updateInvoice = async (req, res) => {
             const clientToUpdate = await Client.findOne({_id: client._id}).session(
                 session
             );
-            if (clientToUpdate && !clientToUpdate.invoices.includes(invoice._id)) {
-                clientToUpdate.invoices.push(invoice._id);
+            if (clientToUpdate && !clientToUpdate.invoices.includes(existingInvoice._id)) {
+                clientToUpdate.invoices.push(existingInvoice._id);
                 await clientToUpdate.save({session});
             }
         }
@@ -381,7 +437,7 @@ const updateInvoice = async (req, res) => {
         await session.commitTransaction();
         res
             .status(200)
-            .json({message: "Invoice updated successfully", data: invoice});
+            .json({message: "Invoice updated successfully", data: existingInvoice});
     } catch (error) {
         await session.abortTransaction();
         res.status(500).json({message: error.message});
@@ -407,12 +463,32 @@ const deleteInvoice = async (req, res) => {
             return res.status(404).json({message: "Invoice not found"});
         }
 
+        const ALLOWED_STATUSES = ["Draft", "Validated W", "Validated", "ValidationFailed"];
+        if (!ALLOWED_STATUSES.includes(invoice.status)) {
+            await session.abortTransaction();
+            return res.status(403).json({message: "Reported invoices to Zatca can't be deleted"});
+        }
+
         invoice.account.invoices.pull(invoice);
         invoice.client.invoices.pull(invoice);
 
-        await invoice.account.save({session}).session(session);
+        await invoice.account.save({session})
 
-        await Invoice.deleteOne({id}).session(session).session(session);
+        await Invoice.deleteOne({id}).session(session);
+        await InvoiceCounter.deleteOne({invoice_id: id}).session(session);
+
+        // 🔥 Call Spring Boot delete endpoint
+        try {
+            await axios.delete(ZATCA_API_BASE_URL + "/invoice/" + invoice.uuid);
+        } catch (springError) {
+            // If Spring Boot fails, rollback Mongo as well
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(500).json({
+                message: "Failed to delete invoice in backend service",
+                error: springError.response?.data || springError.message,
+            });
+        }
 
         await session.commitTransaction();
         session.endSession();

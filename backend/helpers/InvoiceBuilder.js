@@ -40,16 +40,14 @@ class InvoiceBuilder {
         return this.invoice;
     }
 
-    async createInvoiceFromRequest(reqBody, flag, Client, MyOrgProfile) {
-        // let invoiceDoc = await Invoice.findOne({ uuid: reqBody.uuid });
-        //
-        // if (!invoiceDoc) {
-        //     invoiceDoc = new Invoice(builtInvoice);
-        // }
+    async createInvoiceFromRequest(reqBody, flag, Client, MyOrgProfile, session) {
         if (flag === "new") {
-            const customInvoiceId = await generateInvoiceId(Client);
+            const customInvoiceId = await generateInvoiceId(Client, session);
             this.setField("id", customInvoiceId);
             this.setField("uuid", Helper.generateUUID());
+        } else {
+            this.setField("id", reqBody.invoice_id);
+            this.setField("uuid", reqBody.uuid);
         }
 
         let typeCodeOfInvoice = Helper.getZatcaInvoiceType(reqBody.invoice_type);
@@ -64,11 +62,11 @@ class InvoiceBuilder {
                 chargeIndicator: false,
                 allowanceChargeReason: "discount",
                 amount: {
-                    value: Helper.toTwoDecimalsString(reqBody.total_discount_amount),
+                    value: Helper.roundHalfUp(reqBody.total_discount_amount, 2),
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxCategory: {
-                    id: reqBody.tax_category,
+                    id: reqBody.tax_category.split("-")[0],
                     percent: reqBody.tax_percentage.toString(),
                     taxScheme: {id: taxScheme},
                 }
@@ -86,7 +84,7 @@ class InvoiceBuilder {
         //             currencyId: reqBody.currency || reqBody.currency || "SAR",
         //         },
         //         taxCategory: {
-        //             id: reqBody.tax_category,
+        //             id: reqBody.tax_category.split("-")[0],
         //             percent: reqBody.tax_percentage,
         //             taxScheme: {id: taxScheme},
         //         },
@@ -97,26 +95,26 @@ class InvoiceBuilder {
         const taxTotal = [
             {
                 taxAmount: {
-                    value: totalTaxAmount.toFixed(1), // e.g. "0.6"
+                    value: Helper.roundHalfUp(totalTaxAmount,2), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
             },
             {
                 taxAmount: {
-                    value: totalTaxAmount.toFixed(1), // e.g. "0.6"
+                    value: Helper.roundHalfUp(totalTaxAmount,2), // e.g. "0.6"
                     currencyId: reqBody.currency || "SAR",
                 },
                 taxSubtotal: {
                     taxableAmount: {
-                        value: Helper.toTwoDecimalsString(reqBody.subtotal), // e.g. "4.00"
+                        value: Helper.roundHalfUp(reqBody.subtotal, 2), // e.g. "4.00"
                         currencyId: reqBody.currency || "SAR",
                     },
                     taxAmount: {
-                        value: Helper.toTwoDecimalsString(totalTaxAmount), // e.g. "0.60"
+                        value: Helper.roundHalfUp(totalTaxAmount, 2), // e.g. "0.60"
                         currencyId: reqBody.currency || "SAR",
                     },
                     taxCategory: {
-                        id: reqBody.tax_category, // e.g. "S"
+                        id: reqBody.tax_category.split("-")[0], // e.g. "S"
                         percent: reqBody.tax_percentage.toFixed(2), // e.g. "15.00"
                         taxScheme: {
                             id: taxScheme,
@@ -144,27 +142,27 @@ class InvoiceBuilder {
         // Build legalMonetaryTotal
         const legalMonetaryTotal = {
             lineExtensionAmount: {
-                value: Helper.toTwoDecimalsString(totalWithoutDiscount),   // e.g. "4.00"
+                value:  Helper.roundHalfUp(totalWithoutDiscount, 2),   // e.g. "4.00"
                 currencyId: reqBody.currency || "SAR",
             },
             taxExclusiveAmount: {
-                value: Helper.toTwoDecimalsString(totalAfterDiscountAndSurcharge),   // e.g. "4.00"
+                value: Helper.roundHalfUp(totalAfterDiscountAndSurcharge, 2),   // e.g. "4.00"
                 currencyId: reqBody.currency || "SAR",
             },
             taxInclusiveAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.total),   // e.g. "4.60"
+                value: Helper.roundHalfUp(reqBody.total, 2),   // e.g. "4.60"
                 currencyId: reqBody.currency || "SAR",
             },
             allowanceTotalAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.total_discount_amount) || "0.00",
+                value: Helper.roundHalfUp(reqBody.total_discount_amount, 2) || "0.00",
                 currencyId: reqBody.currency || "SAR",
             },
             prepaidAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.prepaid_amount) || "0.00",
+                value: Helper.roundHalfUp(reqBody.prepaid_amount, 2) || "0.00",
                 currencyId: reqBody.currency || "SAR",
             },
             payableAmount: {
-                value: Helper.toTwoDecimalsString(reqBody.total),         // e.g. "4.60"
+                value: Helper.roundHalfUp(reqBody.total, 2),         // e.g. "4.60"
                 currencyId: reqBody.currency || reqBody.currency || "SAR",
             },
         };
@@ -182,7 +180,7 @@ class InvoiceBuilder {
             accountingSupplierParty: supplierDetails,
             accountingCustomerParty: customerDetails,
             "delivery.actualDeliveryDate": Helper.formatDateToZatca(reqBody.deliveryDate),
-            "paymentMeans.paymentMeansCode": reqBody.payment_means,
+            "paymentMeans.paymentMeansCode": reqBody.payment_means.split("-")[0],
             allowanceCharge: allowanceCharge,
             taxTotal: taxTotal,
             legalMonetaryTotal: legalMonetaryTotal,

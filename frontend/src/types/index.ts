@@ -52,6 +52,7 @@ export type Invoice = {
     account: Account;
     client: Client;
     services: Service[];
+    myOrgProfile: MyOrgProfile;
     status: string;
     invoice_name: string
     invoiceDate: string;
@@ -64,6 +65,7 @@ export type Invoice = {
     note: string;
 
     invoice_id: string;
+    reference_number: string;
     uuid: string
     invoice_type_code_value: string;
     invoice_type_code_name: string;
@@ -82,6 +84,8 @@ export type Invoice = {
     subtotal: number;
     total: number;
     prepaid_amount: number;
+    zatca_response: string;
+    invoice_xml_link: string;
 };
 
 export type Service = {
@@ -89,6 +93,7 @@ export type Service = {
     description: string;
     unitPrice: number;
     unitCode: string;
+    item_code: string
     quantity: number;
     price_without_discount: number;
     item_discount_percentage: number;

@@ -67,39 +67,50 @@ class Helper {
         return parseFloat(value).toFixed(2);
     }
 
+    static toFixedTruncate(num, decimals = 2) {
+        const factor = Math.pow(10, decimals);
+        return Math.floor(num * factor) / factor;
+    }
+
+    static roundHalfUp(num, decimals = 2) {
+        const factor = Math.pow(10, decimals);
+        return Math.round(num * factor) / factor;
+    }
+
+
     // Example: reqBody.items = [
 //   { id: 1, name: "قلم رصاص", unitCode: "PCE", quantity: 2, unitPrice: 2.00, taxPercent: 15 }
 // ]
     static buildInvoiceLines(items, currency, taxCateogory, taxPercentage, taxScheme) {
         return items.map((item, index) => {
-            const lineExtensionAmount = item.unitPrice * item.quantity; // total before tax
-            const taxAmount = (lineExtensionAmount * taxPercentage) / 100;
+            const lineExtensionAmount = this.roundHalfUp(item.unitPrice * item.quantity, 2); // total before tax
+            const taxAmount = this.roundHalfUp((item.unitPrice * item.quantity * taxPercentage) / 100, 2);
             const roundingAmount = lineExtensionAmount + taxAmount;
 
             return {
                 id: String(index + 1),
                 invoicedQuantity: {
-                    value: item.quantity.toFixed(6), // UBL needs 6 decimals
+                    value: item.quantity, // UBL needs 6 decimals
                     unitCode: item.unitCode || "PCE",
                 },
                 lineExtensionAmount: {
-                    value: lineExtensionAmount.toFixed(2),
+                    value: lineExtensionAmount,
                     currencyId: currency,
                 },
                 taxTotal: {
                     taxAmount: {
-                        value: taxAmount.toFixed(2),
+                        value: taxAmount,
                         currencyId: currency,
                     },
                     roundingAmount: {
-                        value: roundingAmount.toFixed(2),
+                        value: this.roundHalfUp(roundingAmount, 2),
                         currencyId: currency,
                     },
                 },
                 item: {
                     name: item.name,
                     classifiedTaxCategory: {
-                        id: taxCateogory, // Standard-rated
+                        id: taxCateogory.split("-")[0], // Standard-rated
                         percent: taxPercentage.toFixed(2),
                         taxScheme: {
                             id: taxScheme,
@@ -108,7 +119,7 @@ class Helper {
                 },
                 price: {
                     priceAmount: {
-                        value: item.unitPrice.toFixed(2),
+                        value: item.unitPrice,
                         currencyId: currency,
                     },
                 },

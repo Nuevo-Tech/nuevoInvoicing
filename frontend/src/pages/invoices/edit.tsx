@@ -55,9 +55,13 @@ export const InvoicesPageEdit = () => {
 
     useEffect(() => {
         if (queryResult?.data?.data?.services) {
-            setServices(queryResult?.data?.data?.services);
+            setServices((prev) => (prev.length === 0 ? queryResult.data.data.services : prev));
+        }
+        if (queryResult?.data?.data?.tax_percentage !== undefined) {
+            setTaxPercentage(queryResult.data.data.tax_percentage);
         }
     }, [queryResult]);
+
 
     const {selectProps: selectPropsClients} = useSelect({
         resource: "clients",
@@ -146,14 +150,26 @@ export const InvoicesPageEdit = () => {
             case "Draft":
                 status = "Draft";
                 break;
-            case "NotPaid":
-                status = "NotPaid";
+            case "Validated W":
+                status = "Validated W";
+                break;
+            case "Validated":
+                status = "Validated";
+                break;
+            case "ValidationFailed":
+                status = "ValidationFailed";
                 break;
             case "Paid":
                 status = "Paid";
                 break;
-            case "Refunded":
-                status = "Refunded";
+            case "ZatcaReported W":
+                status = "ZatcaReported W";
+                break;
+            case "ZatcaReported":
+                status = "ZatcaReported";
+                break;
+            case "ZatcaReportingFailed":
+                status = "ZatcaReportingFailed";
                 break;
             default:
                 status = defaultStatus;
@@ -206,30 +222,30 @@ export const InvoicesPageEdit = () => {
     };
 
 
-    const defaultTaxCategory = "S";
+    const defaultTaxCategory = "S-Standard Rated Supply";
     const [selectTaxCategory, setSelectedTaxCategory] = useState(defaultTaxCategory);
     const taxCategoryOptions = [
-        {value: "S", label: "Standard Rated Supply"},
-        {value: "Z", label: "Zero Rated Supply"},
-        {value: "E", label: "Exempt Supply"},
-        {value: "O", label: "Out of Scope"},
+        {value: "S-Standard Rated Supply", label: "S-Standard Rated Supply"},
+        {value: "Z-Zero Rated Supply", label: "Z-Zero Rated Supply"},
+        {value: "E-Exempt Supply", label: "E-Exempt Supply"},
+        {value: "O-Out of Scope", label: "O-Out of Scope"},
     ];
 
     const handleTaxCategoryChange = (value: React.SetStateAction<string>) => {
         let taxCategory = "";
         switch (value) {
-            case "S":
-                taxCategory = "S";
+            case "S-Standard Rated Supply":
+                taxCategory = "S-Standard Rated Supply";
                 break;
-            case "Z":
-                taxCategory = "Z";
+            case "Z-Zero Rated Supply":
+                taxCategory = "Z-Zero Rated Supply";
                 break;
-            case "E":
-                taxCategory = "E";
+            case "E-Exempt Supply":
+                taxCategory = "E-Exempt Supply";
                 break;
 
-            case "O":
-                taxCategory = "O";
+            case "O-Out of Scope":
+                taxCategory = "O-Out of Scope";
                 break;
 
             default:
@@ -239,54 +255,54 @@ export const InvoicesPageEdit = () => {
     };
 
 
-    const defaultPaymentMeans = "10";
+    const defaultPaymentMeans = "10-Cash";
     const [selectPaymentMeans, setSelectedPaymentMeans] = useState(defaultTaxCategory);
     const paymentMeansOptions = [
-        {value: "10", label: "Cash", color: "green"},
-        {value: "20", label: "Cheque", color: "purple"},
-        {value: "30", label: "Credit Transfer (Bank Transfer)", color: "blue"},
-        {value: "31", label: "Debit Transfer", color: "cyan"},
-        {value: "42", label: "Payment to Bank Account", color: "volcano"},
-        {value: "48", label: "Bank Card (POS/Credit/Debit)", color: "gold"},
-        {value: "49", label: "Direct Debit", color: "magenta"},
-        {value: "57", label: "Standing Order", color: "orange"},
-        {value: "97", label: "Other (Not Defined)", color: "red"},
-        {value: "ZZZ", label: "Mutually Defined", color: "geekblue"},
+        {value: "10-Cash", label: "10-Cash", color: "green"},
+        {value: "20-Cheque", label: "20-Cheque", color: "purple"},
+        {value: "30-Credit Transfer", label: "30-Credit Transfer(Bank Transfer)", color: "blue"},
+        {value: "31-Debit Transfer", label: "31-Debit Transfer", color: "cyan"},
+        {value: "42-Payment to Bank Account", label: "42-Payment to Bank Account", color: "volcano"},
+        {value: "48-Bank Card", label: "48-Bank Card (POS/Credit/Debit)", color: "gold"},
+        {value: "49-Direct Debit", label: "49-Direct Debit", color: "magenta"},
+        {value: "57-Standing Order", label: "57-Standing Order", color: "orange"},
+        {value: "97-Other", label: "97-Other (Not Defined)", color: "red"},
+        {value: "ZZZ-Mutually Defined", label: "ZZZ-Mutually Defined", color: "geekblue"},
     ];
 
     const handlePaymentMeansChange = (value: React.SetStateAction<string>) => {
         let paymentMeans = "";
 
         switch (value) {
-            case "10":
-                paymentMeans = "10"; // Cash
+            case "10-Cash":
+                paymentMeans = "10-Cash"; // Cash
                 break;
-            case "20":
-                paymentMeans = "20"; // Cheque
+            case "20-Cheque":
+                paymentMeans = "20-Cheque"; // Cheque
                 break;
-            case "30":
-                paymentMeans = "30"; // Credit Transfer
+            case "30-Credit Transfer":
+                paymentMeans = "30-Credit Transfer"; // Credit Transfer
                 break;
-            case "31":
-                paymentMeans = "31"; // Debit Transfer
+            case "31-Debit Transfer":
+                paymentMeans = "31-Debit Transfer"; // Debit Transfer
                 break;
-            case "42":
-                paymentMeans = "42"; // Payment to Bank Account
+            case "42-Payment to Bank Account":
+                paymentMeans = "42-Payment to Bank Account"; // Payment to Bank Account
                 break;
-            case "48":
-                paymentMeans = "48"; // Bank Card
+            case "48-Bank Card":
+                paymentMeans = "48-Bank Card"; // Bank Card
                 break;
-            case "49":
-                paymentMeans = "49"; // Direct Debit
+            case "49-Direct Debit":
+                paymentMeans = "49-Direct Debit"; // Direct Debit
                 break;
-            case "57":
-                paymentMeans = "57"; // Standing Order
+            case "57-Standing Order":
+                paymentMeans = "57-Standing Order"; // Standing Order
                 break;
-            case "97":
-                paymentMeans = "97"; // Other
+            case "97-Other":
+                paymentMeans = "97-Other"; // Other
                 break;
-            case "ZZZ":
-                paymentMeans = "ZZZ"; // Mutually Defined
+            case "ZZZ-Mutually Defined":
+                paymentMeans = "ZZZ-Mutually Defined"; // Mutually Defined
                 break;
             default:
                 paymentMeans = defaultPaymentMeans; // fallback
@@ -296,7 +312,7 @@ export const InvoicesPageEdit = () => {
     };
 
 
-    const [tax, setTax] = useState<number>(0);
+    const [taxPercentage, setTaxPercentage] = useState<number>(0);
 
     const totalDiscountAmount = services.reduce(
         (acc, service) =>
@@ -308,7 +324,7 @@ export const InvoicesPageEdit = () => {
             (service.unitPrice * service.quantity * (100 - service.item_discount_percentage)) / 100,
         0
     );
-    const total = subtotal + (subtotal * tax) / 100;
+    const total = subtotal + (subtotal * taxPercentage) / 100;
 
     const handleServiceNumbersChange = (
         index: number,
@@ -323,6 +339,7 @@ export const InvoicesPageEdit = () => {
                 priceBeforeDiscount *
                 ((100 - currentService.item_discount_percentage) / 100);
 
+            currentService.unitCode = "PCE";
             currentService.price_without_discount = priceBeforeDiscount;
             currentService.item_discount_amount = priceBeforeDiscount - currentService.totalPrice;
 
@@ -330,13 +347,20 @@ export const InvoicesPageEdit = () => {
         });
     };
 
+    const DISABLED_STATUSES = [
+        "Paid",
+        "ZatcaReported",
+        "ZatcaReported W",
+    ];
+
     if (queryResult?.isLoading) return <Spin/>;
 
     const record = queryResult?.data?.data;
+    const isDisabled = DISABLED_STATUSES.includes(record?.status ?? "");
     return (
         <Edit
             title="Edit Invoice"
-            saveButtonProps={saveButtonProps}
+            saveButtonProps={{...saveButtonProps ,disabled: isDisabled}}
             contentProps={{
                 styles: {
                     body: {
@@ -351,6 +375,7 @@ export const InvoicesPageEdit = () => {
             <Form
                 {...formProps}
                 layout="vertical"
+                disabled={isDisabled}
                 onFinish={async (values) => {
                     userId;
 
@@ -359,7 +384,7 @@ export const InvoicesPageEdit = () => {
                         userId: userId,
                         services: services,
                         subtotal: subtotal,
-                        tax_percentage: tax,
+                        tax_percentage: taxPercentage,
                         total_discount_amount: totalDiscountAmount,
                         total: total,
                     });
@@ -416,6 +441,7 @@ export const InvoicesPageEdit = () => {
 
                             >
                                 <Select
+                                    disabled
                                     placeholder="Select Status"
                                     onChange={handleStatusChange}
                                     options={statusOptions.map((opt) => ({
@@ -665,6 +691,7 @@ export const InvoicesPageEdit = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Unit Price"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.unitPrice}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -683,6 +710,7 @@ export const InvoicesPageEdit = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Quantity"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.quantity}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -702,6 +730,7 @@ export const InvoicesPageEdit = () => {
                                                                     style={{width: "100%"}}
                                                                     placeholder="Discount Percentage"
                                                                     min={0}
+                                                                    precision={2}
                                                                     value={service.item_discount_percentage}
                                                                     onChange={(value) => {
                                                                         handleServiceNumbersChange(
@@ -770,6 +799,7 @@ export const InvoicesPageEdit = () => {
                                                     name: "",
                                                     unitPrice: 0,
                                                     unitCode: "",
+                                                    item_code:"",
                                                     quantity: 0,
                                                     price_without_discount: 0,
                                                     item_discount_percentage: 0,
@@ -819,7 +849,7 @@ export const InvoicesPageEdit = () => {
                                     Tax:
                                 </Typography.Text>
                                 <Form.Item
-                                    name="tax"
+                                    name="tax_percentage"
                                     label="VAT"
                                     labelCol={{span: 8}}
                                     wrapperCol={{span: 16}}
@@ -830,7 +860,7 @@ export const InvoicesPageEdit = () => {
                                         style={{width: "96px"}}
                                         min={0}
                                         onChange={(value) => {
-                                            setTax(value || 0);
+                                            setTaxPercentage(value || 0);
                                         }}
                                     />
                                 </Form.Item>
