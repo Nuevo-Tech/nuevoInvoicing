@@ -54,6 +54,7 @@ const InvoiceSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.Mixed, // or Object
             default: {},
         },
+        invoice_xml_link: {type: String},
     },
     {timestamps: true} // adds createdAt, updatedAt
 );
