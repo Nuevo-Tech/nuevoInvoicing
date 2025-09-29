@@ -97,6 +97,7 @@ router.post("/", async (req, res) => {
                     {
                         $set: {
                             zatca_response: resItem,
+                            invoice_xml_link: resItem.xmlInvoiceUrl,
                             status,
                             zatcaErrorMessages: errors,
                             zatcaWarningMessages: warnings,
