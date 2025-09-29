@@ -25,6 +25,7 @@ import {
     Space,
     Button,
     Spin,
+    Dropdown, Menu
 } from "antd";
 import {
     EditOutlined,
@@ -33,7 +34,8 @@ import {
     SearchOutlined,
     SafetyOutlined,
     FileDoneOutlined,
-    InfoCircleOutlined
+    InfoCircleOutlined,
+    DownloadOutlined,
 
 } from "@ant-design/icons";
 import {API_URL} from "@/utils/constants";
@@ -43,6 +45,12 @@ import type {Invoice} from "@/types";
 import {PdfLayout} from "../pdf";
 import {useState} from "react";
 import JsonModalLayout from "@/pages/actions/JsonModalLayout";
+import {generatePdfBlob} from "@/pages/invoices/generatePdfBytes";
+import {styles} from "@/pages/pdf/stylesheet";
+import {
+    Document,
+    PDFViewer,
+} from "@react-pdf/renderer";
 
 export const InvoicePageList = () => {
     const [record, setRecord] = useState<Invoice>();
@@ -361,6 +369,77 @@ export const InvoicePageList = () => {
                                     return <TagField value={label} color={color}/>;
                                 }}
                             />
+
+
+                            <Table.Column
+                                title="Downloads"
+                                key="downloads"
+                                width={160}
+                                render={(_, record: Invoice) => {
+                                    // Only show if Validated / Reported
+                                    if (
+                                        (record.status !== "ZatcaReported W" && record.status !== "ZatcaReported") ||
+                                        !record.invoice_xml_link // null, undefined, or empty string
+                                    ) {
+                                        return null;
+                                    }
+
+                                    const menu = (
+                                        <Menu>
+                                            <Menu.Item
+                                                key="download-xml"
+                                                onClick={(e) => {
+                                                    e.domEvent.stopPropagation();
+
+                                                    const a = document.createElement("a");
+                                                    a.href = record.invoice_xml_link + "?dl=1"; // force download
+                                                    a.click();
+                                                }}
+                                            >
+                                                Download XML
+                                            </Menu.Item>
+
+                                            <Menu.Item
+                                                key="download-pdf-xml"
+                                                onClick={async (e) => {
+                                                    e.domEvent.stopPropagation();
+                                                    // Generate PDF blob in browser
+                                                    const pdfBlob = await generatePdfBlob(record);
+
+                                                    const formData = new FormData();
+                                                    formData.append("pdf", pdfBlob, `invoice-${record.id}.pdf`);
+                                                    formData.append("invoice_id", record.invoice_id);
+                                                    formData.append("uuid", record.uuid);
+                                                    formData.append("xml_url", record.invoice_xml_link);
+
+                                                    const res = await fetch(
+                                                        BASE_URL_API_V1 + "/pdf/embed-xml",
+                                                        {method: "POST", body: formData}
+                                                    );
+
+                                                    const blob = await res.blob();
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const a = document.createElement("a");
+                                                    a.href = url;
+                                                    a.download = `invoice-${record.id}-embedded.pdf`;
+                                                    a.click();
+                                                }}
+                                            >
+                                                Download PDF with XML
+                                            </Menu.Item>
+                                        </Menu>
+                                    );
+
+                                    return (
+                                        <Dropdown overlay={menu} trigger={["click"]}>
+                                            <Button size="small" icon={<DownloadOutlined/>}>
+                                                Download
+                                            </Button>
+                                        </Dropdown>
+                                    );
+                                }}
+                            />
+
                             <Table.Column
                                 title="Actions"
                                 key="actions"
@@ -423,7 +502,12 @@ export const InvoicePageList = () => {
                 </List>
             </Spin>
             <Modal visible={visible} onCancel={close} width="80%" footer={null}>
-                <PdfLayout record={record}/>
+
+                <PDFViewer style={styles.viewer}>
+                    <Document>
+                        <PdfLayout record={record}/>
+                    </Document>
+                </PDFViewer>
             </Modal>
             <Modal
                 visible={visibleJsonModal}

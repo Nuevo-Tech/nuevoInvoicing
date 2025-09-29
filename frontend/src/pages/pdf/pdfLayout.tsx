@@ -78,8 +78,7 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
     }, [record?.zatca_qr_code]);
 
     return (
-        <PDFViewer style={styles.viewer}>
-            <Document>
+
                 <Page style={styles.page} size="A3">
                     {/* Header Section */}
                     <View style={styles.headerSection}>
@@ -305,7 +304,5 @@ export const PdfLayout: React.FC<PdfProps> = ({record}) => {
                         </Text>
                     </View>
                 </Page>
-            </Document>
-        </PDFViewer>
     );
 };
