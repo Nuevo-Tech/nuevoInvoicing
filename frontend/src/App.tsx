@@ -45,6 +45,7 @@ import {DashboardPage} from "./pages/dashboard";
 import {MyOrgProfilePageEdit} from "./pages/myorgprofile";
 import dataProvider from "@refinedev/simple-rest";
 import {authProvider} from "@/providers/auth-provider";
+import {AuthGuard} from "@/providers/auth-provider/AuthGuard";
 import {ConfigProvider} from "@/providers/config-provider";
 import "@refinedev/antd/dist/reset.css";
 import "./styles/custom.css";
@@ -63,9 +64,7 @@ import {
     ProfileOutlined,
 } from "@ant-design/icons";
 import {useAuth0} from "@auth0/auth0-react";
-// import {Login} from "./providers/auth-provider/login";
-import LandingPage from "@/providers/auth-provider/LandinPage";
-import axios from "axios";
+import {Login} from "./providers/auth-provider/login";
 import {BASE_URL_API_V1} from "./utils/urls";
 import AdminPage from "./pages/admin/index";
 import AdminDashboard from "./pages/admin/dashboard";
@@ -187,6 +186,7 @@ const App: React.FC = () => {
                             {
                                 name: "myorgprofile",
                                 list: "/myorgprofile",
+                                create: "/myorgprofile/new",
                                 edit: "/myorgprofile/:id/edit",
                                 meta: {
                                     label: "My OrgProfile",
@@ -201,6 +201,7 @@ const App: React.FC = () => {
                             breadcrumb: false,
                         }}
                     >
+                        <AuthGuard>
                         <Routes>
                             <Route
                                 element={
@@ -228,6 +229,10 @@ const App: React.FC = () => {
                                 }
                             >
                                 <Route path="/" element={<DashboardPage />} />
+
+
+
+
                                 <Route path="/admin" element={<AdminPage />} />
                                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                                 <Route path="/admin/onboardingclient" element={<OnboardingClient />} />
@@ -329,7 +334,7 @@ const App: React.FC = () => {
                                     </Authenticated>
                                 }
                             >
-                                <Route path="/login" element={<LandingPage/>}/>
+                                <Route path="/login" element={<Login/>}/>
                             </Route>
 
                             <Route
@@ -347,6 +352,7 @@ const App: React.FC = () => {
                                 <Route path="*" element={<ErrorComponent/>}/>
                             </Route>
                         </Routes>
+                        </AuthGuard>
                         <UnsavedChangesNotifier/>
                         <DocumentTitleHandler/>
                     </Refine>

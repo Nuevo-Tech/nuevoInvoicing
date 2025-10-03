@@ -425,7 +425,7 @@ export const InvoicePageList = () => {
                                                     a.click();
                                                 }}
                                             >
-                                                Download PDF with XML
+                                                Download PDF/A3 with XML
                                             </Menu.Item>
                                         </Menu>
                                     );
