@@ -110,12 +110,17 @@ export type MyOrgProfile = {
     citySubdivisionName: string;
     cityName: string;
     postalZone: string;
+    saudi_national_address: string;// short code
     countryIdentificationCode: string;
     partyTaxSchemeCompanyID: string;
     partyTaxSchemeTaxSchemeId: string;
     partyLegalEntityRegistrationName: string;
     email: string;
     phoneNumber: string;
+
+    business_type: string;
+    organization_unit: string;
+    industry_type: string;
     logo: string;
 };
 
