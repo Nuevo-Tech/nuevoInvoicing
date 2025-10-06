@@ -1,6 +1,6 @@
 import {type HttpError, useNavigation} from "@refinedev/core";
-import {DeleteButton, Show, useForm} from "@refinedev/antd";
-import {Card, Col, Divider, Flex, Form, Row, Typography} from "antd";
+import {DeleteButton, Edit, Show, useForm} from "@refinedev/antd";
+import {Card, Col, Divider, Flex, Form, Row, Space, Typography, Modal, Button, Alert} from "antd";
 import {
     BankOutlined,
     EnvironmentOutlined,
@@ -9,9 +9,15 @@ import {
     PhoneOutlined,
     PieChartOutlined,
     UserOutlined,
+    ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import {FormItemEditableInputText, FormItemEditableText, FormItemUploadLogo,} from "@/components/form";
 import type {MyOrgProfile} from "@/types";
+import {useAuth0} from "@auth0/auth0-react";
+import {useState, useEffect} from "react";
+import {BASE_URL_API_V1} from "@/utils/urls";
+
+const {Text} = Typography;
 
 
 export const MyOrgProfilePageEdit = () => {
@@ -48,210 +54,334 @@ export const MyOrgProfilePageEdit = () => {
         userId = parsedUserData.userId;
     }
 
+    const [showModal, setShowModal] = useState(false);
+    const [onboardingComplete, setOnboardingComplete] = useState(false);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const response = await fetch(BASE_URL_API_V1 + "/users/" + userId, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (!data.onboarding_complete) {
+                    setShowModal(true);
+                    setOnboardingComplete(false);
+                } else {
+                    setShowModal(false);
+                    setOnboardingComplete(true);
+                }
+            }
+        };
+        fetchUser();
+    }, [userId]);
+
+    const handleCompleteOnboarding = async () => {
+        if (!userId) return; // safety check
+
+        const response = await fetch(BASE_URL_API_V1 + "/users/" + userId, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                onboarding_complete: true,
+            }),
+        });
+        setShowModal(false);
+    };
+
+
     return (
-        <Show
-            title="MyOrgProfile"
-            headerButtons={() => false}
-            contentProps={{
-                styles: {
-                    body: {
-                        padding: 0,
-                    },
-                },
-                style: {
-                    background: "transparent",
-                    boxShadow: "none",
-                },
-            }}
-        >
-            <Form
-                {...formProps}
-                onFinish={async (values) => {
-                    return formProps.onFinish?.({
-                        ...values,
-                        userId: userId,
-                        // logo: base64Logo,
-                    } as MyOrgProfile);
-                }}
-                layout="vertical"
-            >
-                <Row>
-                    <Col span={24}>
-                        <Flex gap={16}>
-                            <FormItemUploadLogo
-                                isLoading={isLoading}
-                                label={myOrgProfile?.partyLegalEntityRegistrationName || " "}
-                                onUpload={() => {
-                                    formProps.form?.submit();
-                                }}
-                            />
-                            <FormItemEditableText
-                                loading={isLoading}
-                                formItemProps={{
-                                    name: "partyLegalEntityRegistrationName",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                        </Flex>
-                    </Col>
-                </Row>
-                <Row
-                    gutter={32}
-                    style={{
-                        marginTop: "32px",
+        <>
+            <Edit>
+                <Show
+                    title="MyOrgProfile"
+                    headerButtons={() => false}
+                    contentProps={{
+                        styles: {
+                            body: {
+                                padding: 0,
+                            },
+                        },
+                        style: {
+                            background: "transparent",
+                            boxShadow: "none",
+                        },
                     }}
                 >
-                    <Col xs={{span: 24}} xl={{span: 8}}>
-                        <Card
-                            bordered={false}
-                            styles={{body: {padding: 0}}}
-                            title={
-                                <Flex gap={12} align="center">
-                                    <BankOutlined/>
-                                    <Typography.Text>MyOrgProfile info</Typography.Text>
-                                </Flex>
-                            }
-                        >
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<UserOutlined/>}
-                                placeholder="Add Registration name"
-                                formItemProps={{
-                                    name: "partyLegalEntityRegistrationName",
-                                    label: "Organization Registration Name",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<NumberOutlined/>}
-                                placeholder="Add CRN"
-                                formItemProps={{
-                                    name: "partyId",
-                                    label: "Commercial Registration Number",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <Divider style={{margin: 0}}/>
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<PieChartOutlined/>}
-                                placeholder="Add Tax Type"
-                                formItemProps={{
-                                    name: "partyTaxSchemeTaxSchemeId",
-                                    label: "Tax Type",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<NumberOutlined/>}
-                                placeholder="Add VAT number"
-                                formItemProps={{
-                                    name: "partyTaxSchemeCompanyID",
-                                    label: "VAT number",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Add street name"
-                                formItemProps={{
-                                    name: "streetName",
-                                    label: "Street Name",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Add Building No"
-                                formItemProps={{
-                                    name: "buildingNumber",
-                                    label: "Building Number",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Add city subdivision"
-                                formItemProps={{
-                                    name: "citySubdivisionName",
-                                    label: "City Sub Division",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Add city name"
-                                formItemProps={{
-                                    name: "cityName",
-                                    label: "City Name",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Postal Zone"
-                                formItemProps={{
-                                    name: "postalZone",
-                                    label: "Postal Zone",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Add Country Code"
-                                formItemProps={{
-                                    name: "countryIdentificationCode",
-                                    label: "Country Code",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<MailOutlined/>}
-                                placeholder="Add Email"
-                                formItemProps={{
-                                    name: "email",
-                                    label: "Email",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<PhoneOutlined/>}
-                                placeholder="Add Phone Number"
-                                formItemProps={{
-                                    name: "phoneNumber",
-                                    label: "Add Phone Number",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                        </Card>
-                        <DeleteButton
-                            type="text"
+                    <Form disabled={onboardingComplete}
+                        {...formProps}
+                        onFinish={async (values) => {
+                            return formProps.onFinish?.({
+                                ...values,
+                                userId: userId,
+                                // logo: base64Logo,
+                            } as MyOrgProfile);
+                        }}
+                        layout="vertical"
+                    >
+                        <Row gutter={16} align="middle">
+                            <Flex gap={16}>
+                                <FormItemUploadLogo
+                                    isLoading={isLoading}
+                                    label={myOrgProfile?.partyLegalEntityRegistrationName || " "}
+                                    onUpload={() => {
+                                        formProps.form?.submit();
+                                    }}
+                                />
+                                <FormItemEditableText
+                                    loading={isLoading}
+                                    formItemProps={{
+                                        name: "partyLegalEntityRegistrationName",
+                                        rules: [{required: true}],
+                                    }}
+                                />
+                                <Button size="large" key="complete" type="primary" onClick={handleCompleteOnboarding}
+                                        disabled={onboardingComplete}>
+                                    Complete Onboarding
+                                </Button>
+                            </Flex>
+                        </Row>
+                        <Row
+                            gutter={32}
                             style={{
-                                marginTop: "16px",
-                            }}
-                            onSuccess={() => {
-                                window.location.href = listUrl("myorgprofile");
+                                marginTop: "32px",
                             }}
                         >
-                            Delete myOrgProfile
-                        </DeleteButton>
-                    </Col>
-                </Row>
-            </Form>
-        </Show>
+                            <Col xs={{span: 24}} xl={{span: 8}}>
+                                <Card
+                                    bordered={false}
+                                    styles={{body: {padding: 0}}}
+                                    title={
+                                        <Flex gap={12} align="center">
+                                            <BankOutlined/>
+                                            <Typography.Text>MyOrgProfile info</Typography.Text>
+                                        </Flex>
+                                    }
+                                >
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<UserOutlined/>}
+                                        placeholder="Add Registration name"
+                                        formItemProps={{
+                                            name: "partyLegalEntityRegistrationName",
+                                            label: "Organization Registration Name",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<NumberOutlined/>}
+                                        placeholder="Add CRN"
+                                        formItemProps={{
+                                            name: "partyId",
+                                            label: "Commercial Registration Number",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <Divider style={{margin: 0}}/>
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<PieChartOutlined/>}
+                                        placeholder="Add Tax Type"
+                                        formItemProps={{
+                                            name: "partyTaxSchemeTaxSchemeId",
+                                            label: "Tax Type",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<NumberOutlined/>}
+                                        placeholder="Add VAT number"
+                                        formItemProps={{
+                                            name: "partyTaxSchemeCompanyID",
+                                            label: "VAT number",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<BankOutlined/>}
+                                        placeholder="Business Type"
+                                        formItemProps={{
+                                            name: "business_type",
+                                            label: "Business Type",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<BankOutlined/>}
+                                        placeholder="Organization Unit"
+                                        formItemProps={{
+                                            name: "organization_unit",
+                                            label: "Organization Unit",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<BankOutlined/>}
+                                        placeholder="Industry Type"
+                                        formItemProps={{
+                                            name: "industry_type",
+                                            label: "Industry Type",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+
+                                    <Divider style={{margin: 0}}/>
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Add street name"
+                                        formItemProps={{
+                                            name: "streetName",
+                                            label: "Street Name",
+                                            rules: [{required: false}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Add Building No"
+                                        formItemProps={{
+                                            name: "buildingNumber",
+                                            label: "Building Number",
+                                            rules: [{required: false}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Add city subdivision"
+                                        formItemProps={{
+                                            name: "citySubdivisionName",
+                                            label: "City Sub Division",
+                                            rules: [{required: false}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Add city name"
+                                        formItemProps={{
+                                            name: "cityName",
+                                            label: "City Name",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Postal Zone"
+                                        formItemProps={{
+                                            name: "postalZone",
+                                            label: "Postal Zone",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Saudi National address"
+                                        formItemProps={{
+                                            name: "saudi_national_address",
+                                            label: "Saudi National Address (Short code preferred)",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<EnvironmentOutlined/>}
+                                        placeholder="Add Country Code"
+                                        formItemProps={{
+                                            name: "countryIdentificationCode",
+                                            label: "Country Code",
+                                            rules: [{required: true}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<MailOutlined/>}
+                                        placeholder="Add Email"
+                                        formItemProps={{
+                                            name: "email",
+                                            label: "Email",
+                                            rules: [{required: false}],
+                                        }}
+                                    />
+                                    <FormItemEditableInputText
+                                        loading={isLoading}
+                                        icon={<PhoneOutlined/>}
+                                        placeholder="Add Phone Number"
+                                        formItemProps={{
+                                            name: "phoneNumber",
+                                            label: "Add Phone Number",
+                                            rules: [{required: false}],
+                                        }}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Form>
+                </Show>
+            </Edit>
+
+            <Modal
+                open={showModal}
+                onCancel={() => setShowModal(false)}
+                title={
+                    <Space>
+                        <ExclamationCircleOutlined style={{color: "red", fontSize: 20}}/>
+                        <span>Onboarding Required</span>
+                    </Space>
+                }
+                footer={[
+                    <Button key="close" onClick={() => setShowModal(false)}>
+                        Close
+                    </Button>,
+                ]}
+            >
+                <Text strong style={{fontSize: "16px"}}>
+                    Please review your organization details carefully before continuing.
+                </Text>
+                <br/>
+                <Text style={{fontSize: "16px"}}>
+                    These details will be submitted to <b>ZATCA (Saudi Government)</b>.
+                </Text>
+                <br/>
+                <br/>
+                <Text style={{fontSize: "16px"}}>
+                    Once Done, Click on <b>'Complete Onboarding'</b> Button to continue.
+                </Text>
+                <Divider/>
+
+                <Alert
+                    type="warning"
+                    showIcon
+                    message="After onboarding is completed:"
+                    description={
+                        <>
+                            <p>Your organization details will be locked and cannot be edited directly.</p>
+                            <p>These details will be used as your official seller information on all invoices.</p>
+                            <p>To make future changes, please contact your service provider/vendor.</p>
+                        </>
+                    }
+                />
+            </Modal>
+        </>
     );
 };

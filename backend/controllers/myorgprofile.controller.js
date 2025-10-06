@@ -27,6 +27,71 @@ const getMyOrgProfileDetail = async (req, res) => {
     }
 };
 
+
+const createMyOrgProfile = async (req, res) => {
+    try {
+        const {
+            company_legal_name,
+            company_location,
+            business_type,
+            organization_unit,
+            industry_type,
+            vat_number,
+            company_crn,
+            building_number,
+            street_name,
+            city,
+            city_subdivision,
+            postal_code,
+            email,
+            phone,
+            saudi_national_address,
+            schemeId = "CRN",
+        } = req.body;
+
+        // Ensure user exists
+        const Profile = await MyOrgProfile.findOne();
+        if (Profile) {
+            return res.status(200).json({ message: "Org Profile already exists" });
+        }
+
+        // Create new MyOrgProfile document
+        const newOrgProfile = new MyOrgProfile({
+            id: "1", // static for single org (adjust if multi-org later)
+            partyId: company_crn,
+            schemeId,
+            streetName: street_name,
+            buildingNumber: building_number,
+            citySubdivisionName: city_subdivision,
+            cityName: city,
+            postalZone: postal_code,
+            countryIdentificationCode: company_location,
+            partyTaxSchemeCompanyID: vat_number,
+            partyTaxSchemeTaxSchemeId: "VAT",
+            partyLegalEntityRegistrationName: company_legal_name,
+            saudi_national_address,
+            business_type,
+            organization_unit,
+            industry_type,
+            email,
+            phoneNumber: phone.number,
+        });
+
+        const savedOrgProfile = await newOrgProfile.save();
+
+        res.status(201).json({
+            message: "MyOrgProfile created successfully",
+            data: savedOrgProfile,
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({ message: "Duplicate entry detected" });
+        }
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 const updateMyOrgProfile = async (req, res) => {
     try {
         const id = "1";
@@ -44,6 +109,10 @@ const updateMyOrgProfile = async (req, res) => {
             partyLegalEntityRegistrationName,
             email,
             phoneNumber,
+            saudi_national_address,
+            business_type,
+            organization_unit,
+            industry_type,
             logo,
             userId,
         } = req.body;
@@ -98,7 +167,15 @@ const updateMyOrgProfile = async (req, res) => {
         if (partyLegalEntityRegistrationName) updatedFields.partyLegalEntityRegistrationName = partyLegalEntityRegistrationName;
         if (email) updatedFields.email = email;
         if (phoneNumber) updatedFields.phoneNumber = phoneNumber;
+
+
+        if (saudi_national_address) updatedFields.saudi_national_address = saudi_national_address;
+        if (business_type) updatedFields.business_type = business_type;
+        if (organization_unit) updatedFields.organization_unit = organization_unit;
+        if (industry_type) updatedFields.industry_type = industry_type;
+
         if (logo) updatedFields.logo = logo;
+        if (userId) updatedFields.creator = userId;
 
         const updatedMyOrgProfile = await MyOrgProfile.findByIdAndUpdate(
             _id,
@@ -152,5 +229,6 @@ const updateMyOrgProfile = async (req, res) => {
 
 export {
     getMyOrgProfileDetail,
+    createMyOrgProfile,
     updateMyOrgProfile,
 };

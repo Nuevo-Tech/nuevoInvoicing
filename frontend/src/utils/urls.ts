@@ -13,3 +13,16 @@ export const USER_URLS = {
   GET_USER_BY_EMAIL: (email: string) =>
     `${USER_URLS.USERS}/getUser?email=${encodeURIComponent(email)}`,
 };
+
+// Zatca URLS to be edited still
+export const ZATCA_URLS = {
+  USERS: `${BASE_URL_API_V1}/users`,
+  GET_USER_BY_EMAIL: (email: string) =>
+      `${USER_URLS.USERS}/getUser?email=${encodeURIComponent(email)}`,
+};
+
+
+// MyOrgProfile
+export const MY_ORG_PROFILE_URLS = {
+  CREATE: `${BASE_URL_API_V1}/myorgprofile`,
+}
