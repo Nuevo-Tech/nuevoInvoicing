@@ -1,6 +1,6 @@
 import {type HttpError, useNavigation} from "@refinedev/core";
 import {DeleteButton, Edit, Show, useForm} from "@refinedev/antd";
-import {Card, Col, Divider, Flex, Form, Row, Space, Typography, Modal, Button} from "antd";
+import {Card, Col, Divider, Flex, Form, Row, Space, Typography, Modal, Button, Alert} from "antd";
 import {
     BankOutlined,
     EnvironmentOutlined,
@@ -15,6 +15,7 @@ import {FormItemEditableInputText, FormItemEditableText, FormItemUploadLogo,} fr
 import type {MyOrgProfile} from "@/types";
 import {useAuth0} from "@auth0/auth0-react";
 import {useState, useEffect} from "react";
+import {BASE_URL_API_V1} from "@/utils/urls";
 
 const {Text} = Typography;
 
@@ -53,40 +54,41 @@ export const MyOrgProfilePageEdit = () => {
         userId = parsedUserData.userId;
     }
 
-    const {user, getAccessTokenSilently} = useAuth0();
     const [showModal, setShowModal] = useState(false);
+    const [onboardingComplete, setOnboardingComplete] = useState(false);
 
     useEffect(() => {
-        const metadata = user?.["https://jawad-crm/user_metadata"];
-        if (metadata && !metadata.onboarding_complete) {
-            setShowModal(true);
-        }
-    }, [user]);
+        const fetchUser = async () => {
+            const response = await fetch(BASE_URL_API_V1 + "/users/" + userId, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (!data.onboarding_complete) {
+                    setShowModal(true);
+                    setOnboardingComplete(false);
+                } else {
+                    setShowModal(false);
+                    setOnboardingComplete(true);
+                }
+            }
+        };
+        fetchUser();
+    }, [userId]);
 
     const handleCompleteOnboarding = async () => {
-        if (!user) return; // safety check
+        if (!userId) return; // safety check
 
-        const token = await getAccessTokenSilently({
-            authorizationParams: {
-                audience: "https://jawad-crm.us.auth0.com/api/v2/",
-                scope: "update:users",
-            },
-        });
-
-        await fetch(`https://jawad-crm.us.auth0.com/api/v2/users/${user.sub}`, {
+        const response = await fetch(BASE_URL_API_V1 + "/users/" + userId, {
             method: "PATCH",
             headers: {
-                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                user_metadata: {
-                    ...(user["https://jawad-crm/user_metadata"] || {}),
-                    onboarding_complete: true,
-                },
+                onboarding_complete: true,
             }),
         });
-
         setShowModal(false);
     };
 
@@ -109,7 +111,7 @@ export const MyOrgProfilePageEdit = () => {
                         },
                     }}
                 >
-                    <Form
+                    <Form disabled={onboardingComplete}
                         {...formProps}
                         onFinish={async (values) => {
                             return formProps.onFinish?.({
@@ -136,7 +138,8 @@ export const MyOrgProfilePageEdit = () => {
                                         rules: [{required: true}],
                                     }}
                                 />
-                                <Button size="large" key="complete" type="primary" onClick={handleCompleteOnboarding}>
+                                <Button size="large" key="complete" type="primary" onClick={handleCompleteOnboarding}
+                                        disabled={onboardingComplete}>
                                     Complete Onboarding
                                 </Button>
                             </Flex>
@@ -339,6 +342,7 @@ export const MyOrgProfilePageEdit = () => {
 
             <Modal
                 open={showModal}
+                onCancel={() => setShowModal(false)}
                 title={
                     <Space>
                         <ExclamationCircleOutlined style={{color: "red", fontSize: 20}}/>
@@ -363,6 +367,20 @@ export const MyOrgProfilePageEdit = () => {
                 <Text style={{fontSize: "16px"}}>
                     Once Done, Click on <b>'Complete Onboarding'</b> Button to continue.
                 </Text>
+                <Divider/>
+
+                <Alert
+                    type="warning"
+                    showIcon
+                    message="After onboarding is completed:"
+                    description={
+                        <>
+                            <p>Your organization details will be locked and cannot be edited directly.</p>
+                            <p>These details will be used as your official seller information on all invoices.</p>
+                            <p>To make future changes, please contact your service provider/vendor.</p>
+                        </>
+                    }
+                />
             </Modal>
         </>
     );
