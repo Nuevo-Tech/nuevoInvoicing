@@ -122,6 +122,9 @@ export type MyOrgProfile = {
     organization_unit: string;
     industry_type: string;
     logo: string;
+
+    onboarding_complete: string;
+    plan_type: string;
 };
 
 export type User = {

@@ -1,6 +1,7 @@
 import type {AuthProvider} from "@refinedev/core";
 import {MY_ORG_PROFILE_URLS, USER_URLS} from "@/utils/urls";
 import axios from "axios";
+const planType =  import.meta.env.VITE_APP_ACCOUNT_TYPE;
 
 export const authProvider = (
     user: any,
@@ -75,6 +76,7 @@ const handleUserCreationInDb = async (user: any) => {
                 name: user.name,
                 email: user.email,
                 avatar: user.picture,
+                plan_type: planType,
             }),
         });
 
@@ -87,6 +89,7 @@ const handleUserCreationInDb = async (user: any) => {
                     ...user,
                     avatar: user.picture,
                     userId: data._id,
+                    plan_type: planType,
                 })
             );
         }

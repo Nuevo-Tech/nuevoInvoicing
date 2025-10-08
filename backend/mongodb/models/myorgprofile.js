@@ -30,6 +30,8 @@ const MyOrgProfileSchema = new mongoose.Schema({
         organization_unit: {type: String, required: true},
         industry_type: {type: String, required: true},
 
+        onboarding_complete: {type: Boolean, default: false},
+        plan_type: {type: String, required: true},
         creator: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
     },
     {timestamps: true}

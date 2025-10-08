@@ -1,6 +1,6 @@
 import {type HttpError, useNavigation} from "@refinedev/core";
 import {DeleteButton, Edit, Show, useForm} from "@refinedev/antd";
-import {Card, Col, Divider, Flex, Form, Row, Space, Typography, Modal, Button, Alert} from "antd";
+import {Card, Col, Divider, Flex, Form, Row, Space, Typography, Modal, Button, Alert, Input} from "antd";
 import {
     BankOutlined,
     EnvironmentOutlined,
@@ -13,15 +13,12 @@ import {
 } from "@ant-design/icons";
 import {FormItemEditableInputText, FormItemEditableText, FormItemUploadLogo,} from "@/components/form";
 import type {MyOrgProfile} from "@/types";
-import {useAuth0} from "@auth0/auth0-react";
 import {useState, useEffect} from "react";
 import {BASE_URL_API_V1} from "@/utils/urls";
 
 const {Text} = Typography;
 
-
 export const MyOrgProfilePageEdit = () => {
-    const {listUrl} = useNavigation();
 
     const {formProps, query: queryResult} = useForm<
         MyOrgProfile,
@@ -49,13 +46,18 @@ export const MyOrgProfilePageEdit = () => {
 
     const userData = localStorage.getItem("user");
     let userId = "";
+    let planType = "";
     if (userData) {
         const parsedUserData = JSON.parse(userData);
         userId = parsedUserData.userId;
+        planType = parsedUserData.plan_type;
     }
+
+    const isTrialAccount = planType === "trial";
 
     const [showModal, setShowModal] = useState(false);
     const [onboardingComplete, setOnboardingComplete] = useState(false);
+    const [otp, setOtp] = useState("");
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -90,6 +92,7 @@ export const MyOrgProfilePageEdit = () => {
             }),
         });
         setShowModal(false);
+        setOnboardingComplete(true);
     };
 
 
@@ -112,15 +115,15 @@ export const MyOrgProfilePageEdit = () => {
                     }}
                 >
                     <Form disabled={onboardingComplete}
-                        {...formProps}
-                        onFinish={async (values) => {
-                            return formProps.onFinish?.({
-                                ...values,
-                                userId: userId,
-                                // logo: base64Logo,
-                            } as MyOrgProfile);
-                        }}
-                        layout="vertical"
+                          {...formProps}
+                          onFinish={async (values) => {
+                              return formProps.onFinish?.({
+                                  ...values,
+                                  userId: userId,
+                                  // logo: base64Logo,
+                              } as MyOrgProfile);
+                          }}
+                          layout="vertical"
                     >
                         <Row gutter={16} align="middle">
                             <Flex gap={16}>
@@ -138,10 +141,6 @@ export const MyOrgProfilePageEdit = () => {
                                         rules: [{required: true}],
                                     }}
                                 />
-                                <Button size="large" key="complete" type="primary" onClick={handleCompleteOnboarding}
-                                        disabled={onboardingComplete}>
-                                    Complete Onboarding
-                                </Button>
                             </Flex>
                         </Row>
                         <Row
@@ -335,6 +334,127 @@ export const MyOrgProfilePageEdit = () => {
                                     />
                                 </Card>
                             </Col>
+
+                            {isTrialAccount && (
+                                <Col xs={24} xl={12}>
+                                    <Card
+                                        bordered={false}
+                                        styles={{body: {padding: "2rem 1rem"}}}
+                                        title={
+                                            <Flex gap={12} align="center">
+                                                <Typography.Text strong>Click below to Complete
+                                                    Onboarding</Typography.Text>
+                                            </Flex>
+                                        }
+                                    >
+                                        <Space
+                                            direction="vertical"
+                                            size="large"
+                                            style={{
+                                                width: "100%",
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            <Button
+                                                size="large"
+                                                type="primary"
+                                                onClick={handleCompleteOnboarding}
+                                                disabled={otp.length !== 5 || onboardingComplete}
+                                                style={{
+                                                    width: 220,
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {onboardingComplete ? "Onboarding Completed" : "Complete Onboarding"}
+                                            </Button>
+                                        </Space>
+                                    </Card>
+                                </Col>)}
+
+                            {/* RIGHT SIDE — ZATCA OTP Section */}
+                            {!isTrialAccount && (
+                                <Col xs={24} xl={12}>
+                                    <Card
+                                        bordered={false}
+                                        styles={{body: {padding: "2rem 1rem"}}}
+                                        title={
+                                            <Flex gap={12} align="center">
+                                                <Typography.Text strong>ZATCA OTP Verification</Typography.Text>
+                                            </Flex>
+                                        }
+                                    >
+                                        <Space
+                                            direction="vertical"
+                                            size="large"
+                                            style={{
+                                                width: "100%",
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            <Text strong style={{fontSize: 16}}>
+                                                Enter your 5-digit ZATCA OTP to complete onboarding
+                                            </Text>
+
+                                            <Input.OTP
+                                                length={5}
+                                                value={otp}
+                                                size="large"
+                                                onChange={(value) => setOtp(value)}
+                                                disabled={onboardingComplete}
+                                                style={{
+                                                    justifyContent: "center",
+                                                    gap: 10,
+                                                }}
+                                                type="number"
+                                            />
+
+                                            <Button
+                                                size="large"
+                                                type="primary"
+                                                onClick={handleCompleteOnboarding}
+                                                disabled={otp.length !== 5 || onboardingComplete}
+                                                style={{
+                                                    width: 220,
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {onboardingComplete ? "Onboarding Completed" : "Complete Onboarding"}
+                                            </Button>
+
+                                            <Alert
+                                                type="info"
+                                                showIcon
+                                                message="🔐 How to Generate Your ZATCA OTP"
+                                                description={
+                                                    <Space direction="vertical" size={"large"}
+                                                           style={{display: "flex"}}>
+                                                        <Text>
+                                                            1. Go to ZATCA Fatoora Portal:{" "} <br/>
+                                                            Link:{" "}
+                                                            <a
+                                                                href="https://fatoora.zatca.gov.sa"
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                https://fatoora.zatca.gov.sa
+                                                            </a>
+                                                        </Text>
+                                                        <Text>2. Log in using your VAT/TIN credentials or Nafath.</Text>
+                                                        <Text>3. Open “E-Invoicing (Fatoora)” → “Compliance / Device
+                                                            Onboarding”.</Text>
+                                                        <Text>4. Click “Generate OTP” — a 5-digit code will appear
+                                                            (valid
+                                                            for 1 hour).</Text>
+                                                        <Text>5. Enter the OTP in this application to complete
+                                                            onboarding.</Text>
+                                                    </Space>
+                                                }/>
+
+
+                                        </Space>
+                                    </Card>
+                                </Col>
+                            )}
                         </Row>
                     </Form>
                 </Show>
