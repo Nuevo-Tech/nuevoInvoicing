@@ -34,33 +34,6 @@ export function updateInvoiceZatcaBackend(payload, uuid) {
     return handleRequest(api.put("/invoice/" + uuid, payload, {headers: {egsClientName: "Syncshire"}}));
 }
 
-export function onboardClient(payload) {
+export function onboardZatcaClient(payload) {
     return handleRequest(api.post("/onboardClient", payload));
 }
-
-// export async function checkInvoicesCompliance(payload) {
-//     const invoicesWithType = await Promise.all(
-//         payload.body.invoices.map(async ({invoiceId}) => {
-//             const invoiceDoc = await Invoice.findOne({id: invoiceId}).lean();
-//
-//             return {
-//                 invoiceId,
-//                 invoiceType: invoiceDoc?.invoice_type || "StandardInvoice", // fallback
-//             };
-//         })
-//     );
-//
-//     // Final payload to send
-//     const requestBody = {
-//         acceptLanguage: "EN",
-//         egsClientName: "Syncshire",
-//         invoices: invoicesWithType,
-//     };
-//
-//     console.log("📥 Request body being sent:", requestBody);
-//     return handleRequest(api.post("/checkInvoicesCompliance", requestBody));
-// }
-
-// export function reportInvoice(payload) {
-//     return handleRequest(api.post("/reportInvoice", payload));
-// }

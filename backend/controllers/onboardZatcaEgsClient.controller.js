@@ -1,29 +1,29 @@
-import OnboardClient from "../mongodb/models/onboardclient.js";
+import OnboardZatcaEgsClient from "../mongodb/models/OnboardZatcaEgsClient.js";
 
-const getAllClients = async (req, res) => {
+const getAllZatcaEgsClients = async (req, res) => {
   try {
-    const clients = await OnboardClient.find({}).limit(req.query._end);
+    const clients = await OnboardZatcaEgsClient.find({}).limit(req.query._end);
     res.status(200).json(clients);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const getClient = async (req, res) => {
+const getZatcaEgsClient = async (req, res) => {
   try {
     const { email } = req.params;
-    const client = await OnboardClient.findOne({ email });
+    const client = await OnboardZatcaEgsClient.findOne({ email });
     if (client) {
-      return res.status(200).json({ message: "Client exists", client });
+      return res.status(200).json({ message: "ZatcaEgsClient exists", client });
     } else {
-      return res.status(404).json({ message: "Client does not exist" });
+      return res.status(404).json({ message: "ZatcaEgsClient does not exist" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const createClient = async (req, res) => {
+const createZatcaEgsClient = async (req, res) => {
   try {
     const {
       otp,
@@ -41,12 +41,12 @@ const createClient = async (req, res) => {
       organization_unit,
     } = req.body;
 
-    const clientExists = await OnboardClient.findOne({ email });
+    const clientExists = await OnboardZatcaEgsClient.findOne({ email });
     if (clientExists) return res.status(200).json(clientExists);
 
     const currentDate = new Date();
 
-    const newClient = await OnboardClient.create({
+    const newZatcaEgsClient = await OnboardZatcaEgsClient.create({
       otp,
       egs_client_name,
       vat_registration_number,
@@ -63,13 +63,13 @@ const createClient = async (req, res) => {
       updatedDate: currentDate,
     });
 
-    res.status(200).json(newClient);
+    res.status(200).json(newZatcaEgsClient);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const updateClient = async (req, res) => {
+const updateZatcaEgsClient = async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -85,7 +85,7 @@ const updateClient = async (req, res) => {
 
     const currentDate = new Date();
 
-    await OnboardClient.findByIdAndUpdate(
+    await OnboardZatcaEgsClient.findByIdAndUpdate(
       { _id: id },
       {
         city,
@@ -99,37 +99,37 @@ const updateClient = async (req, res) => {
         updatedDate: currentDate,
       }
     );
-    res.status(200).json({ message: "Client updated successfully" });
+    res.status(200).json({ message: "ZatcaEgsClient updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const getClientInfoByID = async (req, res) => {
+const getZatcaEgsClientInfoByID = async (req, res) => {
   try {
     const { id } = req.params;
-    const client = await OnboardClient.findOne({ _id: id });
+    const client = await OnboardZatcaEgsClient.findOne({ _id: id });
     if (client) {
       res.status(200).json(client);
     } else {
-      res.status(404).json({ message: "Client not found" });
+      res.status(404).json({ message: "ZatcaEgsClient not found" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const deleteClient = async (req, res) => {
+const deleteZatcaEgsClient = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await OnboardClient.findByIdAndDelete(id);
+    const deleted = await OnboardZatcaEgsClient.findByIdAndDelete(id);
     if (!deleted) {
-      return res.status(404).json({ message: "Client not found" });
+      return res.status(404).json({ message: "ZatcaEgsClient not found" });
     }
-    res.status(200).json({ message: "Client deleted successfully" });
+    res.status(200).json({ message: "ZatcaEgsClient deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export { getAllClients, getClient, createClient, getClientInfoByID, updateClient, deleteClient };
+export { getAllZatcaEgsClients, getZatcaEgsClient, createZatcaEgsClient, getZatcaEgsClientInfoByID, updateZatcaEgsClient, deleteZatcaEgsClient };

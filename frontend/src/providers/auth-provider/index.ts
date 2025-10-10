@@ -1,7 +1,9 @@
 import type {AuthProvider} from "@refinedev/core";
 import {MY_ORG_PROFILE_URLS, USER_URLS} from "@/utils/urls";
 import axios from "axios";
-const planType =  import.meta.env.VITE_APP_ACCOUNT_TYPE;
+
+const auth0TenantUrl = import.meta.env.VITE_APP_AUTH0_TENANT_URL;
+const plan_type = import.meta.env.VITE_APP_PLAN_TYPE;
 
 export const authProvider = (
     user: any,
@@ -76,7 +78,6 @@ const handleUserCreationInDb = async (user: any) => {
                 name: user.name,
                 email: user.email,
                 avatar: user.picture,
-                plan_type: planType,
             }),
         });
 
@@ -89,7 +90,6 @@ const handleUserCreationInDb = async (user: any) => {
                     ...user,
                     avatar: user.picture,
                     userId: data._id,
-                    plan_type: planType,
                 })
             );
         }
@@ -102,12 +102,12 @@ const handleUserCreationInDb = async (user: any) => {
 const handleInsertingMyOrgProfileInDb = async (user: any) => {
     try {
 
-        const metadata = user?.["https://jawad-crm/user_metadata"];
+        const metadata = user?.[auth0TenantUrl + "/user_metadata"];
 
         const response = await fetch(MY_ORG_PROFILE_URLS.CREATE, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(metadata),
+            body: JSON.stringify({...metadata, plan_type: plan_type}),
         });
 
         const data = await response.json();

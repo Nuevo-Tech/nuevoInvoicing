@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const OnboardClientSchema = new mongoose.Schema({
+const OnboardZatcaEgsClientSchema = new mongoose.Schema({
   otp: { type: String, required: true },
   egs_client_name: { type: String, required: true },
   vat_registration_number: { type: String, required: true, unique: true },
@@ -18,6 +18,6 @@ const OnboardClientSchema = new mongoose.Schema({
   updatedDate: { type: Date, required: false },
 });
 
-const onboardClientModel = mongoose.model("OnboardClient", OnboardClientSchema);
+const onboardZatcaEgsClientModel = mongoose.model("OnboardZatcaEgsClient", OnboardZatcaEgsClientSchema);
 
-export default onboardClientModel;
+export default onboardZatcaEgsClientModel;

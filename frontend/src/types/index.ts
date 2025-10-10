@@ -125,6 +125,7 @@ export type MyOrgProfile = {
 
     onboarding_complete: string;
     plan_type: string;
+    otp: string;
 };
 
 export type User = {
