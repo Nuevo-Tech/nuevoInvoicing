@@ -185,8 +185,8 @@ const App: React.FC = () => {
                             },
                             {
                                 name: "myorgprofile",
+                                create: "/invoices/new",
                                 list: "/myorgprofile",
-                                create: "/myorgprofile/new",
                                 edit: "/myorgprofile/:id/edit",
                                 meta: {
                                     label: "My OrgProfile",
@@ -320,10 +320,10 @@ const App: React.FC = () => {
                                 <Route path="/admin" element={<AdminPage />} />
 
                                 <Route path="/myorgprofile">
-                                    <Route index element={<MyOrgProfilePageEdit/>}/>
-                                    <Route path=":id" element={<MyOrgProfilePageEdit/>}/>
+                                    <Route index element={<MyOrgProfilePageEdit />} />
                                     <Route path=":id/edit" element={<MyOrgProfilePageEdit/>}/>
                                 </Route>
+
 
                                 <Route path="*" element={<ErrorComponent/>}/>
                             </Route>

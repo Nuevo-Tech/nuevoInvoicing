@@ -11,8 +11,8 @@ import accountRouter from "./routes/account.routes.js";
 import fileUploadRouter from "./middleware/fileUpload.middleware.js";
 import currencyRouter from "./routes/currency.routes.js";
 import path from "path";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+import {fileURLToPath} from "url";
+import {dirname} from "path";
 import invoiceRouter from "./routes/invoice.routes.js";
 import eventRouter from "./routes/event.routes.js";
 import analyticsRouter from "./routes/analytics.routes.js";
@@ -31,10 +31,10 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "50mb" }));
+app.use(express.json({limit: "50mb"}));
 
 app.get("/", (req, res) => {
-  res.send({ message: "Hello World!" });
+    res.send({message: "Hello World!"});
 });
 
 app.use("/api/v1/users", userRouter);
@@ -49,29 +49,32 @@ app.use("/api/v1/events", eventRouter);
 app.use("/api/v1/monthly-income", analyticsRouter);
 app.use("/api/v1/clientmedias", clientMediaRouter);
 app.use("/api/v1/myorgprofile", myorgprofileRouter);
+
+
 app.use("/api/v1/zatca/onboardClient", onboardClientRouter);
 app.use("/api/v1/zatca/checkInvoicesCompliance", zatcaComplianceCheckRouter);
 app.use("/api/v1/zatca/reportInvoice", zatcaReportInvoiceRouter);
 app.use("/api/v1/zatca", zatcaBackendRouter);
+
+
 app.use("/api/v1/embedPdf", embedPdfRouter);
 app.use("/api/v1/clients/embedPdf", embedPdfRouter);
-app.use("/api/v1/clients/onboardClient", onboardClientRouter);
 app.use("/api/v1/clients/checkInvoicesCompliance", zatcaComplianceCheckRouter);
 app.use("/api/v1/clients/reportInvoice", zatcaReportInvoiceRouter);
 app.use("/api/v1/clients/zatca", zatcaBackendRouter);
 app.use("/api/v1/pdf/embed-xml", embedPdfRouter);
 
 const startServer = async () => {
-  try {
-    //connect to database
-    connectDB(process.env.MONGODB_URL);
+    try {
+        //connect to database
+        connectDB(process.env.MONGODB_URL);
 
-    const port = process.env.PORT || 8081;
+        const port = process.env.PORT || 8081;
 
-    app.listen(port, () => console.log(`Server has started on port: ${port}`));
-  } catch (error) {
-    console.log(error);
-  }
+        app.listen(port, () => console.log(`Server has started on port: ${port}`));
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 startServer();

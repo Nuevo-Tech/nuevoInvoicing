@@ -133,9 +133,6 @@ const updateMyOrgProfile = async (req, res) => {
             otp,
         } = req.body;
 
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({message: "User Not Found"});
@@ -144,7 +141,7 @@ const updateMyOrgProfile = async (req, res) => {
         const myOrgProfile = await MyOrgProfile.findOneAndUpdate(
             {id},                      // search condition
             {$setOnInsert: {id}},    // if not found, insert with this id
-            {new: true, upsert: true}  // return the doc & create if not exists
+            {new: true, upsert: true}// return the doc & create if not exists
         );
         if (!myOrgProfile) {
             return res.status(404).json({message: "MyOrgProfile not found"});
@@ -186,7 +183,6 @@ const updateMyOrgProfile = async (req, res) => {
         if (partyLegalEntityRegistrationName) updatedFields.partyLegalEntityRegistrationName = partyLegalEntityRegistrationName;
         if (email) updatedFields.email = email;
         if (phoneNumber) updatedFields.phoneNumber = phoneNumber;
-        if (otp) updatedFields.otp = otp;
 
 
         if (saudi_national_address) updatedFields.saudi_national_address = saudi_national_address;
@@ -194,30 +190,19 @@ const updateMyOrgProfile = async (req, res) => {
         if (organization_unit) updatedFields.organization_unit = organization_unit;
         if (industry_type) updatedFields.industry_type = industry_type;
 
-        if (logo) updatedFields.logo = logo;
         if (userId) updatedFields.creator = userId;
         if (plan_type) updatedFields.plan_type = plan_type;
-        if (onboarding_complete) updatedFields.onboarding_complete = onboarding_complete;
 
         const updatedMyOrgProfile = await MyOrgProfile.findByIdAndUpdate(
             _id,
             {$set: updatedFields},
-            {new: true, runValidators: true}, {session}// Return the updated document and run validations
+            {new: true, runValidators: true},// Return the updated document and run validations
         );
-
-        const {zatcaStatus, zatcaData} = await onboardClient(session);
-        if (![200, 202].includes(zatcaStatus)) {
-            return res.status(500).json({
-                data: zatcaData,
-                message: zatcaData?.message || "Failed at backend"
-            });
-        }
-
         await session.commitTransaction();
 
         res
             .status(200)
-            .json({message: "Zatca Egs Client Onboarded successfully"});
+            .json({ message: "MyOrgProfile updated successfully", data: updatedMyOrgProfile });
     } catch (error) {
         if (error.code === 11000) {
             await session.abortTransaction();
@@ -230,88 +215,7 @@ const updateMyOrgProfile = async (req, res) => {
     }
 };
 
-const onboardClient = async (session) => {
-    try {
-        // 1️⃣ Fetch organization profile
-        const myOrgProfileExists = await MyOrgProfile.findOne();
 
-        if (!myOrgProfileExists) {
-            console.error("Organization profile not found.");
-            return;
-        }
-
-        // 2️⃣ Destructure fields from DB
-        const {
-            partyId,
-            schemeId,
-            streetName,
-            buildingNumber,
-            citySubdivisionName,
-            cityName,
-            postalZone,
-            countryIdentificationCode,
-            partyTaxSchemeCompanyID,
-            partyTaxSchemeTaxSchemeId,
-            partyLegalEntityRegistrationName,
-            saudi_national_address,
-            business_type,
-            organization_unit,
-            industry_type,
-            email,
-            plan_type,
-            phoneNumber,
-            otp,
-        } = myOrgProfileExists;
-
-        // 3️⃣ Example OTP (you’ll probably pass this from user input)
-
-        let currentOtp = "";
-        const trialOtp = "12345";
-
-        if (plan_type !== "trial") {
-            currentOtp = otp
-        } else {
-            currentOtp = trialOtp;
-        }
-
-        let locationAddress = "";
-        if (saudi_national_address === "" || saudi_national_address === null) {
-            locationAddress = cityName
-        } else {
-            locationAddress = saudi_national_address;
-        }
-
-
-        // 4️⃣ Map fields to ZATCA payload structure
-        const payload = {
-            otp: currentOtp,
-            egs_client_name: partyLegalEntityRegistrationName,
-            vat_registration_number: partyTaxSchemeCompanyID,
-            city: cityName,
-            address: `${buildingNumber} ${streetName}`,
-            country_code: countryIdentificationCode,
-            business_type: business_type,
-            location_address: locationAddress,
-            industry_type: industry_type,
-            contact_number: phoneNumber,
-            email: email,
-            zip_code: postalZone,
-            organization_unit: organization_unit,
-        };
-
-        console.log("✅ Onboarding Zatca Client:", payload);
-
-        const {zatcaStatus, zatcaData} = await onboardZatcaClient(payload);
-        return {
-            zatcaStatus: zatcaStatus || 500,
-            zatcaData: zatcaData,
-        };
-
-    } catch
-        (error) {
-        throw error;
-    }
-};
 
 
 // const deleteMyOrgProfile = async (req, res) => {

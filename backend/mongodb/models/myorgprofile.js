@@ -32,7 +32,6 @@ const MyOrgProfileSchema = new mongoose.Schema({
 
         onboarding_complete: {type: Boolean, default: false},
         plan_type: {type: String, required: true},
-        otp: {type: String, required: false},
         creator: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
     },
     {timestamps: true}

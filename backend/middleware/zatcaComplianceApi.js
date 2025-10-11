@@ -1,6 +1,7 @@
 import express from "express";
 import Invoice from "../mongodb/models/invoice.js";
-import { handleRequest, api } from "./zatcaApis.js"; // your API helper
+import { handleRequest, api } from "./zatcaApis.js";
+import MyOrgProfile from "../mongodb/models/myorgprofile.js"; // your API helper
 
 const router = express.Router();
 const ZATCA_API_BASE_URL = process.env.ZATCA_BACKEND_BASE_URL;
@@ -17,6 +18,9 @@ router.post("/", async (req, res) => {
 
         const invoicesWithInfo = [];
         const invalidInvoices = [];
+
+        const MyOrgProfileDoc = await MyOrgProfile.findOne();
+        const egsClientName = MyOrgProfileDoc.partyLegalEntityRegistrationName;
 
         // Step 1: Validate invoices & build request for ZATCA
         for (const { invoiceId } of invoicesArray) {
@@ -48,7 +52,7 @@ router.post("/", async (req, res) => {
         // Step 2: Send to ZATCA backend
         const requestBody = {
             acceptLanguage: "EN",
-            egsClientName: "Syncshire",
+            egsClientName: egsClientName,
             invoices: invoicesWithInfo,
         };
 

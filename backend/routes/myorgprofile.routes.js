@@ -10,8 +10,7 @@ const router = express.Router();
 
 router.route("/").get(getMyOrgProfileDetail);
 router.route("/:id").get(getMyOrgProfileDetail);
-router.route("/:id").post(updateMyOrgProfile);
 router.route("/:id").patch(updateMyOrgProfile);
-router.route("/").post(createMyOrgProfile);
+router.route("/create").post(createMyOrgProfile);
 
 export default router;

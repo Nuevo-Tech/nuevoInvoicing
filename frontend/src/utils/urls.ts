@@ -17,6 +17,7 @@ export const USER_URLS = {
 // Zatca URLS to be edited still
 export const ZATCA_URLS = {
   USERS: `${BASE_URL_API_V1}/users`,
+  ONBOARD_CLIENT: `${BASE_URL_API_V1}/zatca/onboardClient`,
   GET_USER_BY_EMAIL: (email: string) =>
       `${USER_URLS.USERS}/getUser?email=${encodeURIComponent(email)}`,
 };
@@ -24,5 +25,5 @@ export const ZATCA_URLS = {
 
 // MyOrgProfile
 export const MY_ORG_PROFILE_URLS = {
-  CREATE: `${BASE_URL_API_V1}/myorgprofile`,
+  CREATE: `${BASE_URL_API_V1}/myorgprofile/create`,
 }

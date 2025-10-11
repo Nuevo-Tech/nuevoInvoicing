@@ -35,5 +35,5 @@ export function updateInvoiceZatcaBackend(payload, uuid) {
 }
 
 export function onboardZatcaClient(payload) {
-    return handleRequest(api.post("/onboardClient", payload));
+    return handleRequest(api.post("/onboardClient", payload, {headers: {Accept: "application/json"}}));
 }

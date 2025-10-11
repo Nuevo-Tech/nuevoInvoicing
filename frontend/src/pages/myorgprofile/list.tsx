@@ -14,7 +14,9 @@ import {
 import {FormItemEditableInputText, FormItemEditableText, FormItemUploadLogo,} from "@/components/form";
 import type {MyOrgProfile} from "@/types";
 import {useState, useEffect} from "react";
-import {BASE_URL_API_V1} from "@/utils/urls";
+import {BASE_URL_API_V1, ZATCA_URLS} from "@/utils/urls";
+
+import {UseToastHelpers} from "@/components/toastHelper/UseToastHelpers";
 
 const plan_type = import.meta.env.VITE_APP_PLAN_TYPE;
 
@@ -53,11 +55,12 @@ export const MyOrgProfilePageEdit = () => {
             userId = parsedUserData.userId;
         }
 
-    const [loading, setLoading] = useState(false);
+        const [loading, setLoading] = useState(false);
+        const {showSuccess, showError} = UseToastHelpers();
         const isTrialAccount = plan_type === "trial";
 
         const [showModal, setShowModal] = useState(false);
-        const [onboardingComplete, setOnboardingComplete] = useState(false);
+        const [onboardingComplete, setOnboardingComplete] = useState(myOrgProfile?.onboarding_complete || false);
         const [otp, setOtp] = useState("");
 
         useEffect(() => {
@@ -75,26 +78,31 @@ export const MyOrgProfilePageEdit = () => {
             if (!myOrgProfile) return; // safety check
             setLoading(true);
 
-            const response = await fetch(BASE_URL_API_V1 + "/myorgprofile/1", {
-                method: "PATCH",
+            const response = await fetch(ZATCA_URLS.ONBOARD_CLIENT, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    onboarding_complete: true,
+                    otp: otp,
                 }),
             });
             setLoading(false);
             setShowModal(false);
-            setOnboardingComplete(true);
+            if (response.status == 200 || response.status == 201) {
+                showSuccess("status:" + response.status, "Successfully Onboarded Client on Zatca");
+                setOnboardingComplete(true);
+            } else {
+                showError("status:" + response.status, "Client onboarding on Zatca Failed!!");
+                setOnboardingComplete(false);
+            }
         };
 
 
         return (
             <>
                 <Spin spinning={loading} tip="Processing...">
-                <Edit>
-                    <Show
+                    <Edit
                         title="MyOrgProfile"
                         headerButtons={() => false}
                         contentProps={{
@@ -109,14 +117,15 @@ export const MyOrgProfilePageEdit = () => {
                             },
                         }}
                     >
+
                         <Form disabled={onboardingComplete}
                               {...formProps}
                               onFinish={async (values) => {
-                                  return formProps.onFinish?.({
-                                      ...values,
-                                      userId: userId,
-                                      // logo: base64Logo,
-                                  } as MyOrgProfile);
+                                  return fetch(`${BASE_URL_API_V1}/myorgprofile/1`, {
+                                      method: "PATCH",
+                                      headers: {"Content-Type": "application/json"},
+                                      body: JSON.stringify({...values, userId}),
+                                  });
                               }}
                               layout="vertical"
                         >
@@ -452,52 +461,53 @@ export const MyOrgProfilePageEdit = () => {
                                 )}
                             </Row>
                         </Form>
-                    </Show>
-                </Edit>
+                    </Edit>
                 </Spin>
 
-                <Modal
-                    open={showModal}
-                    onCancel={() => setShowModal(false)}
-                    title={
-                        <Space>
-                            <ExclamationCircleOutlined style={{color: "red", fontSize: 20}}/>
-                            <span>Onboarding Required</span>
-                        </Space>
-                    }
-                    footer={[
-                        <Button key="close" onClick={() => setShowModal(false)}>
-                            Close
-                        </Button>,
-                    ]}
-                >
-                    <Text strong style={{fontSize: "16px"}}>
-                        Please review your organization details carefully before continuing.
-                    </Text>
-                    <br/>
-                    <Text style={{fontSize: "16px"}}>
-                        These details will be submitted to <b>ZATCA (Saudi Government)</b>.
-                    </Text>
-                    <br/>
-                    <br/>
-                    <Text style={{fontSize: "16px"}}>
-                        Once Done, Click on <b>'Complete Onboarding'</b> Button to continue.
-                    </Text>
-                    <Divider/>
-
-                    <Alert
-                        type="warning"
-                        showIcon
-                        message="After onboarding is completed:"
-                        description={
-                            <>
-                                <p>Your organization details will be locked and cannot be edited directly.</p>
-                                <p>These details will be used as your official seller information on all invoices.</p>
-                                <p>To make future changes, please contact your service provider/vendor.</p>
-                            </>
+                {!queryResult?.isLoading && showModal && (
+                    <Modal
+                        open={showModal}
+                        onCancel={() => setShowModal(false)}
+                        title={
+                            <Space>
+                                <ExclamationCircleOutlined style={{color: "red", fontSize: 20}}/>
+                                <span>Onboarding Required</span>
+                            </Space>
                         }
-                    />
-                </Modal>
+                        footer={[
+                            <Button key="close" onClick={() => setShowModal(false)}>
+                                Close
+                            </Button>,
+                        ]}
+                    >
+                        <Text strong style={{fontSize: "16px"}}>
+                            Please review your organization details carefully before continuing.
+                        </Text>
+                        <br/>
+                        <Text style={{fontSize: "16px"}}>
+                            These details will be submitted to <b>ZATCA (Saudi Government)</b>.
+                        </Text>
+                        <br/>
+                        <br/>
+                        <Text style={{fontSize: "16px"}}>
+                            Once Done, Click on <b>'Complete Onboarding'</b> Button to continue.
+                        </Text>
+                        <Divider/>
+
+                        <Alert
+                            type="warning"
+                            showIcon
+                            message="After onboarding is completed:"
+                            description={
+                                <>
+                                    <p>Your organization details will be locked and cannot be edited directly.</p>
+                                    <p>These details will be used as your official seller information on all invoices.</p>
+                                    <p>To make future changes, please contact your service provider/vendor.</p>
+                                </>
+                            }
+                        />
+                    </Modal>
+                )}
             </>
         );
     }
