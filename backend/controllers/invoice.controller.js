@@ -255,7 +255,7 @@ const createInvoice = async (req, res) => {
 
     } catch (error) {
         await session.abortTransaction();
-        session.endSession();
+        await session.endSession();
         if (error.code === 11000) {
             return res.status(409).json({message: "Owner email already exists"});
         }

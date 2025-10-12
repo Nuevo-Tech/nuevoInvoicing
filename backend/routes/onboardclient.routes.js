@@ -1,20 +1,20 @@
 import express from "express";
 import {
-  createClient,
-  getClient,
-  getAllClients,
-  getClientInfoByID,
-  updateClient,
-  deleteClient,
-} from "../controllers/onboardclient.controller.js";
+  createZatcaEgsClient,
+  // getZatcaEgsClient,
+  // getAllZatcaEgsClients,
+  // getZatcaEgsClientInfoByID,
+  // updateZatcaEgsClient,
+  deleteZatcaEgsClient,
+} from "../controllers/onboardZatcaEgsClient.controller.js";
 
 const router = express.Router();
 
-router.route("/").get(getAllClients);
-router.route("/getClient").get(getClient);
-router.route("/").post(createClient);
-router.route("/:id").patch(updateClient);
-router.route("/:id").get(getClientInfoByID);
-router.route("/:id").delete(deleteClient);
+// router.route("/").get(getAllZatcaEgsClients);
+// router.route("/getClient").get(getZatcaEgsClient);
+router.route("/").post(createZatcaEgsClient);
+// router.route("/:id").patch(updateZatcaEgsClient);
+// router.route("/:id").get(getZatcaEgsClientInfoByID);
+router.route("/:id").delete(deleteZatcaEgsClient);
 
 export default router;

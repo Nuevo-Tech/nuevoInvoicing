@@ -1,5 +1,7 @@
 import User from "../mongodb/models/user.js";
 import Currency from "../mongodb/models/currency.js";
+import Client from "../mongodb/models/client.js";
+import mongoose from "mongoose";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -33,7 +35,7 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, avatar } = req.body;
+    const { name, email, avatar, plan_type } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -55,6 +57,7 @@ const createUser = async (req, res) => {
       name,
       email,
       avatar,
+      plan_type,
       updatedDate: currentDate,
       // currency: currency._id,
     });
@@ -69,40 +72,45 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { address, phone_number, user_role, baseCurrency, targetCurrency } =
+    const { address, phone_number, user_role, baseCurrency, targetCurrency, onboarding_complete } =
       req.body;
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    const curCurrency = await User.findById(id)
-      .populate("currency")
-      .session(session);
-    const curCurrencyId = curCurrency.currency._id;
-
-    if (baseCurrency | appSelectedCurrency) {
-      await Currency.findByIdAndUpdate(
-        { _id: curCurrencyId },
-        {
-          baseCurrency,
-          targetCurrency,
-        }
-      );
-    }
+    // const curCurrency = await User.findById(id)
+    //   .populate("currency")
+    //   .session(session);
+    // const curCurrencyId = curCurrency.currency._id;
+    //
+    // if (baseCurrency | appSelectedCurrency) {
+    //   await Currency.findByIdAndUpdate(
+    //     { _id: curCurrencyId },
+    //     {
+    //       baseCurrency,
+    //       targetCurrency,
+    //     }
+    //   );
+    // }
 
     const currentDate = new Date();
 
-    await User.findByIdAndUpdate(
-      { _id: id },
-      {
-        address,
-        phone_number,
-        updatedDate: currentDate,
-        user_role,
-        currency: curCurrencyId,
-      }
+    const updatedFields = {};
+
+    if (address) updatedFields.address = address;
+    if (phone_number) updatedFields.phoneNumber = phone_number;
+    if (user_role) updatedFields.user_role = user_role;
+    if (baseCurrency) updatedFields.baseCurrency = baseCurrency;
+    if (targetCurrency) updatedFields.targetCurrency = targetCurrency;
+    if (onboarding_complete) updatedFields.onboarding_complete = onboarding_complete;
+    updatedFields.updatedDate = currentDate;
+
+    const updatedUser = await User.findByIdAndUpdate(
+        { _id: id },
+        {$set: updatedFields},
+        {new: true, runValidators: true} // Return the updated document and run validations
     );
-    res.status(200).json({ message: "Client updated successfully" });
+    res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -112,7 +120,7 @@ const getUserInfoByID = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await User.findOne({ _id: id }).populate("allClients");
+    const user = await User.findOne({ _id: id });
 
     if (user) {
       res.status(200).json(user);
