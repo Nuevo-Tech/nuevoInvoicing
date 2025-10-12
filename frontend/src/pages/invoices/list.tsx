@@ -39,7 +39,7 @@ import {
 
 } from "@ant-design/icons";
 import {API_URL} from "@/utils/constants";
-import {BASE_URL_API_V1} from "@/utils/urls";
+import {BASE_URL_API_V1, ZATCA_URLS} from "@/utils/urls";
 import {getRandomColorFromString} from "@/utils/get-random-color";
 import type {Invoice} from "@/types";
 import {PdfLayout} from "../pdf";
@@ -51,6 +51,7 @@ import {
     Document,
     PDFViewer,
 } from "@react-pdf/renderer";
+import {UseToastHelpers} from "@/components/toastHelper/UseToastHelpers";
 
 export const InvoicePageList = () => {
     const [record, setRecord] = useState<Invoice>();
@@ -104,7 +105,9 @@ export const InvoicePageList = () => {
         },
     };
     const [loading, setLoading] = useState(false);
-    const handleSendSelectedCompliance = async () => {
+
+    const {showSuccess, showError} = UseToastHelpers();
+    const handleSelectedInvoiceZatcaComplianceCheck = async () => {
         if (selectedRowKeys.length === 0) return;
         const payload = {
             invoices: selectedRowKeys.map((id) => ({
@@ -113,19 +116,25 @@ export const InvoicePageList = () => {
         };
         try {
             setLoading(true); // 🔹 Start loading
-            const response = await fetch(BASE_URL_API_V1 + "/zatca/checkInvoicesCompliance", {
+            const response = await fetch(ZATCA_URLS.COMPLIANCE_CHECK, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(payload),
             });
             setLoading(false);
             window.location.reload();
+            if (response.status == 200 || response.status == 201) {
+                showSuccess("status:" + response.status, "Zatca Compliance Check Successfull");
+            } else {
+                showError("status:" + response.status, "Zatca Compliance Check Failed!!");
+            }
         } catch (error) {
+            showError("check individual invoice status modal", "Zatca Compliance Check Failed!!");
             console.error("Error sending selected invoices:", error);
         }
     };
 
-    const handleSendSelectedReporting = async () => {
+    const handleSelectedInvoiceZatcaReporting = async () => {
         if (selectedRowKeys.length === 0) return;
         const payload = {
             invoices: selectedRowKeys.map((id) => ({
@@ -134,18 +143,23 @@ export const InvoicePageList = () => {
         };
         try {
             setLoading(true); // 🔹 Start loading
-            const response = await fetch(BASE_URL_API_V1 + "/zatca/reportInvoice", {
+            const response = await fetch(ZATCA_URLS.REPORT_INVOICE, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(payload),
             });
             setLoading(false);
             window.location.reload();
+            if (response.status == 200 || response.status == 201) {
+                showSuccess("status:" + response.status, "Zatca Invoice Reporting Successfull");
+            } else {
+                showError("status:" + response.status, "Zatca Invoice Reporting Failed!!");
+            }
         } catch (error) {
+            showError("check individual invoice status modal", "Zatca Invoice Reporting Failed!!");
             console.error("Error sending selected invoices:", error);
         }
     };
-
 
     const {show, visible, close} = useModal();
     const [visibleJsonModal, setVisibleJsonModal] = useState(false);
@@ -160,7 +174,7 @@ export const InvoicePageList = () => {
                             <Space>
                                 <SaveButton
                                     size="large"
-                                    onClick={handleSendSelectedReporting}
+                                    onClick={handleSelectedInvoiceZatcaReporting}
                                     icon={<FileDoneOutlined/>}
                                     disabled={selectedRowKeys.length === 0}
                                 >
@@ -168,7 +182,7 @@ export const InvoicePageList = () => {
                                 </SaveButton>
                                 <SaveButton
                                     size="large"
-                                    onClick={handleSendSelectedCompliance}
+                                    onClick={handleSelectedInvoiceZatcaComplianceCheck}
                                     icon={<SafetyOutlined/>}
                                     disabled={selectedRowKeys.length === 0}
                                 >
