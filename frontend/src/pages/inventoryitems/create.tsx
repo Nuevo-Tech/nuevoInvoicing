@@ -15,7 +15,7 @@ export const InventoryItemsPageCreate = () => {
         const parsedUserData = JSON.parse(userData);
         userId = parsedUserData.userId;
     }
-    const defaultCurrencySymbol = "SAR ﷼";
+    const defaultCurrencySymbol = "SAR";
 
     const unitOfMeasureOptions = [
         {value: "PCE", label: "Piece", color: "orange"},
@@ -92,6 +92,8 @@ export const InventoryItemsPageCreate = () => {
                 {...formProps}
                 initialValues={{
                     tax_rate: defaultTaxRate,
+                    unit: defaultMeasureOfUnit,
+                    is_service: false,
                 }}
                 onFinish={async (values) => {
                     return formProps.onFinish?.({
@@ -125,7 +127,7 @@ export const InventoryItemsPageCreate = () => {
                         <Form.Item
                             name="unit"
                             label="Unit"
-                            rules={[{required: false}]}
+                            rules={[{required: true}]}
                         >
                             <Select
                                 options={unitOfMeasureOptions.map((opt) => ({
@@ -164,7 +166,7 @@ export const InventoryItemsPageCreate = () => {
                 </Row>
 
                 <Row gutter={16}>
-                    <Col xs={24} >
+                    <Col xs={24}>
                         <Form.Item
                             label="Description"
                             name="description"

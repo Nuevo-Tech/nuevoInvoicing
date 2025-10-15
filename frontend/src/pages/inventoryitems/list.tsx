@@ -1,67 +1,54 @@
-import type { PropsWithChildren } from "react";
-import { getDefaultFilter, useGo } from "@refinedev/core";
+import type {PropsWithChildren} from "react";
+import {getDefaultFilter, useGo} from "@refinedev/core";
 import {
     CreateButton,
     DeleteButton,
     EditButton,
     FilterDropdown,
-    List,
-    NumberField,
     getDefaultSortOrder,
+    List,
+    TagField,
     useSelect,
-    useTable, DateField, TagField,
+    useTable,
 } from "@refinedev/antd";
-import {EyeOutlined, MailOutlined, SearchOutlined} from "@ant-design/icons";
-import { Avatar, Flex, Input, Select, Table, Typography } from "antd";
-import { API_URL } from "@/utils/constants";
-import { getRandomColorFromString } from "@/utils/get-random-color";
+import {EyeOutlined, SearchOutlined} from "@ant-design/icons";
+import {Avatar, Flex, Input, Select, Table, Typography} from "antd";
+import {getRandomColorFromString} from "@/utils/get-random-color";
 import type {InventoryItem, Invoice} from "@/types";
 
-export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
+export const InventoryItemsPageList = ({children}: PropsWithChildren) => {
     const go = useGo();
 
-    const { tableProps, filters, sorters } = useTable<InventoryItem>({
+    const {tableProps, filters, sorters} = useTable<InventoryItem>({
         sorters: {
-            initial: [{ field: "updatedAt", order: "desc" }],
+            initial: [{field: "updatedAt", order: "desc"}],
         },
         filters: {
             initial: [
                 {
-                    field: "inventoryItem_name",
+                    field: "item_name",
                     operator: "contains",
                     value: "",
                 },
             ],
         },
-        // meta: {
-        //     populate: ["logo", "invoices"],
-        // },
+        meta: {
+            populate: ["inventoryitems"],
+        },
     });
 
-    const { selectProps: inventoryItemNameSelectProps } = useSelect({
+    const {selectProps: inventoryItemNameSelectProps} = useSelect({
         resource: "inventoryitems",
         optionLabel: "item_name",
         optionValue: "item_name",
     });
 
-    const { selectProps: inventoryItemStatusSelectProps } = useSelect({
+    const {selectProps: inventoryItemStatusSelectProps} = useSelect({
         resource: "inventoryitems",
-        optionLabel: "status",
-        optionValue: "status",
+        optionLabel: "item_code",
+        optionValue: "item_code",
     });
-
-    const getStatusColor = (status: string | undefined) => {
-        switch (status?.toLowerCase()) {
-            case "done":
-                return "green";
-            case "new":
-                return "purple";
-            case "cancelled":
-                return "red";
-            default:
-                return "default"; // fallback color
-        }
-    };
+    const defaultCurrencySymbol = "SAR";
 
 
     return (
@@ -74,8 +61,8 @@ export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
                             size="large"
                             onClick={() =>
                                 go({
-                                    to: { resource: "inventoryitems", action: "create" },
-                                    options: { keepQuery: true },
+                                    to: {resource: "inventoryitems", action: "create"},
+                                    options: {keepQuery: true},
                                 })
                             }
                         >
@@ -91,7 +78,7 @@ export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
                         ...tableProps.pagination,
                         showSizeChanger: true,
                     }}
-                    scroll={{ x: "960px" }}
+                    scroll={{x: "960px"}}
                 >
                     <Table.Column
                         title="ID"
@@ -99,23 +86,23 @@ export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
                         key="id"
                         width={80}
                         defaultFilteredValue={getDefaultFilter("id", filters)}
-                        filterIcon={<SearchOutlined />}
+                        filterIcon={<SearchOutlined/>}
                         filterDropdown={(props) => {
                             return (
                                 <FilterDropdown {...props}>
-                                    <Input placeholder="Search ID" />
+                                    <Input placeholder="Search ID"/>
                                 </FilterDropdown>
                             );
                         }}
                     />
                     <Table.Column
-                        title="InventoryItem Name"
-                        dataIndex="inventoryItem_name"
-                        key="inventoryItem_name"
+                        title="tem Name"
+                        dataIndex="item_name"
+                        key="item_name"
                         sorter
-                        defaultSortOrder={getDefaultSortOrder("inventoryItem_name", sorters)}
+                        defaultSortOrder={getDefaultSortOrder("item_name", sorters)}
                         defaultFilteredValue={getDefaultFilter(
-                            "inventoryItem_name",
+                            "item_name",
                             filters,
                             "in"
                         )}
@@ -123,8 +110,8 @@ export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
                             <FilterDropdown {...props}>
                                 <Select
                                     mode="multiple"
-                                    placeholder="Search InventoryItem Name"
-                                    style={{ width: 220 }}
+                                    placeholder="Search Item Name"
+                                    style={{width: 220}}
                                     {...inventoryItemNameSelectProps}
                                 />
                             </FilterDropdown>
@@ -155,66 +142,138 @@ export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
                     />
 
                     <Table.Column
-                        title="Phone"
-                        dataIndex="phone"
-                        key="phone"
+                        title="Item Code"
+                        dataIndex="item_code"
+                        key="item_code"
                         width={154}
                         defaultFilteredValue={getDefaultFilter(
-                            "phone",
+                            "item_code",
                             filters,
                             "contains"
                         )}
-                        filterIcon={<SearchOutlined />}
+                        filterIcon={<SearchOutlined/>}
                         filterDropdown={(props) => {
                             return (
                                 <FilterDropdown {...props}>
-                                    <Input placeholder="Search Phone" />
+                                    <Input placeholder="Search Item Code"/>
                                 </FilterDropdown>
                             );
                         }}
                     />
-                    {/*<Table.Column*/}
-                    {/*    title="Date"*/}
-                    {/*    dataIndex="date"*/}
-                    {/*    key="date"*/}
-                    {/*    width={120}*/}
-                    {/*    sorter*/}
-                    {/*    defaultSortOrder={getDefaultSortOrder(*/}
-                    {/*        "date",*/}
-                    {/*        sorters*/}
-                    {/*    )}*/}
-                    {/*    render={(_, record: InventoryItem) => {*/}
-                    {/*        return (*/}
-                    {/*            <DateField value={record.date}*/}
-                    {/*                       format="D MMM YYYY hh:mm A" />*/}
-                    {/*        );*/}
-                    {/*    }}*/}
-                    {/*/>*/}
                     <Table.Column
-                        title="Status"
-                        dataIndex="status"
-                        key="status"
+                        title="Stock"
+                        dataIndex="current_stock"
+                        key="current_stock"
                         width={106}
                         sorter
-                        defaultSortOrder={getDefaultSortOrder("status", sorters)}
+                        defaultSortOrder={getDefaultSortOrder("current_stock", sorters)}
                         defaultFilteredValue={getDefaultFilter(
-                            "status",
+                            "current_stock",
                             filters,
                             "in"
                         )}
-                        filterDropdown={(props) => (
-                            <FilterDropdown {...props}>
-                                <Select
-                                    mode="multiple"
-                                    placeholder="Search status"
-                                    style={{ width: 220 }}
-                                    {...inventoryItemStatusSelectProps}
+                        render={(_, record: InventoryItem) => {
+                            return (
+                                <TagField
+                                    value={`${defaultCurrencySymbol} ${record.current_stock}`}
+                                    color={
+                                        record.current_stock === 0
+                                            ? "volcano"
+                                            : record.current_stock < 5
+                                                ? "red"
+                                                : record.current_stock < 10
+                                                    ? "gold"
+                                                    : "green"
+                                    }
                                 />
-                            </FilterDropdown>
+                            );
+                        }}
+                    />
+                    <Table.Column
+                        title="Cost Price"
+                        dataIndex="cost_price"
+                        key="cost_price"
+                        width={154}
+                        sorter
+                        defaultSortOrder={getDefaultSortOrder("cost_price", sorters)}
+                        defaultFilteredValue={getDefaultFilter(
+                            "cost_price",
+                            filters,
+                            "contains"
                         )}
-                        render={(status: string) => (
-                            <TagField value={status} color={getStatusColor(status)} />
+                        filterIcon={<SearchOutlined/>}
+                        render={(_, record: InventoryItem) => {
+                            return (
+                                <TagField
+                                    value={`${defaultCurrencySymbol} ${record.cost_price}`}
+                                    color="orange"
+                                />
+                            );
+                        }}
+                    />
+                    <Table.Column
+                        title="Selling Price"
+                        dataIndex="selling_price"
+                        key="selling_price"
+                        width={154}
+                        sorter
+                        defaultSortOrder={getDefaultSortOrder("selling_price", sorters)}
+                        defaultFilteredValue={getDefaultFilter(
+                            "selling_price",
+                            filters,
+                            "contains"
                         )}
+                        filterIcon={<SearchOutlined/>}
+                        render={(_, record: InventoryItem) => {
+                            return (
+                                <TagField
+                                    value={`${defaultCurrencySymbol} ${record.selling_price}`}
+                                    color="cyan"
+                                />
+                            );
+                        }}
+                    />
+                    <Table.Column
+                        title="Tax %"
+                        dataIndex="tax_rate"
+                        key="tax_rate"
+                        width={154}
+                        defaultFilteredValue={getDefaultFilter(
+                            "tax_rate",
+                            filters,
+                            "contains"
+                        )}
+                        filterIcon={<SearchOutlined/>}
+                        render={(_, record: InventoryItem) => {
+                            return (
+                                <TagField
+                                    value={`% ${record.tax_rate}`}
+                                    color="blue"
+                                />
+                            );
+                        }}
+                    />
+                    <Table.Column
+                        title="Discount %"
+                        dataIndex="discount_rate"
+                        key="discount_rate"
+                        width={154}
+                        sorter
+                        defaultSortOrder={getDefaultSortOrder("discount_rate", sorters)}
+                        defaultFilteredValue={getDefaultFilter(
+                            "discount_rate",
+                            filters,
+                            "contains"
+                        )}
+                        filterIcon={<SearchOutlined/>}
+                        render={(_, record: InventoryItem) => {
+                            return (
+                                <TagField
+                                    value={`% ${record.discount_rate}`}
+                                    color="red"
+                                />
+                            );
+                        }}
                     />
                     <Table.Column
                         title="Actions"
@@ -229,7 +288,7 @@ export const InventoryItemsPageList = ({ children }: PropsWithChildren) => {
                                         size="small"
                                         hideText
                                         recordItemId={record.id}
-                                        icon={<EyeOutlined />}
+                                        icon={<EyeOutlined/>}
                                     />
                                     <DeleteButton
                                         size="small"

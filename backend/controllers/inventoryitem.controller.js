@@ -94,7 +94,6 @@ const createInventoryItem = async (req, res) => {
     session.startTransaction();
     try {
         const {
-            item_code,
             item_name,
             description,
             category,
@@ -109,18 +108,20 @@ const createInventoryItem = async (req, res) => {
             current_stock,
         } = req.body;
 
-        if (!item_code || !item_name) {
+        if (!item_name || !unit) {
             return res.status(400).json({message: "Missing required fields"});
         }
 
         const maxIdInventoryItem = await InventoryItem.findOne().sort({id: -1}).select("id");
         const nextId = maxIdInventoryItem ? parseInt(maxIdInventoryItem.id) + 1 : 1;
+        // Generate item_code in format ITM00001
+        const itemCode = `ITM000${String(nextId)}`;
 
         let photoUrl = "";
 
         const newInventoryItem = new InventoryItem({
             id: nextId,
-            item_code,
+            item_code: itemCode,
             item_name,
             description,
             category,

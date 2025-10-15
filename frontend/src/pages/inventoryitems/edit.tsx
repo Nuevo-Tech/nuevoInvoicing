@@ -1,58 +1,79 @@
-import {file2Base64, type HttpError, useNavigation} from "@refinedev/core";
-import {
-    DateField,
-    DeleteButton,
-    EditButton,
-    NumberField,
-    Show,
-    ShowButton,
-    useForm, useSelect,
-} from "@refinedev/antd";
-import {Card, Divider, Flex, Form, SelectProps, Table, Typography} from "antd";
-import {
-    BankOutlined,
-    EnvironmentOutlined, ExportOutlined,
-    FieldTimeOutlined,
-    PhoneOutlined,
-} from "@ant-design/icons";
-import {Col, Row} from "antd";
-import {
-    FormItemEditableInputText, FormItemEditableSelectStatic,
-    FormItemEditableText,
-} from "@/components/form";
+import {type HttpError, useNavigation} from "@refinedev/core";
+import {Edit, useForm,} from "@refinedev/antd";
+import {Col, Card, Form, Input, InputNumber, Row, Select, Skeleton, Tag, Typography} from "antd";
 import type {InventoryItem} from "@/types";
-import {FormItemEditableInputDateTime} from "@/components/form/form-item-editable-input-datetime";
-import dayjs from "dayjs";
+import {useState} from "react";
 
 export const InventoryItemsPageEdit = () => {
     const {listUrl} = useNavigation();
 
-    const {formProps, query: queryResult} = useForm<
+    const {formProps, query: queryResult, saveButtonProps} = useForm<
         InventoryItem,
         HttpError
     >({
-        redirect: false,
-        // meta: {
-        //     populate: ["logo", "clients", "invoices.client"],
-        // },
+        meta: {
+            populate: ["inventoryitem"],
+        },
     });
+
     const inventoryItem = queryResult?.data?.data;
     const isLoading = queryResult?.isLoading;
 
 
-    const getStatusColor = (status: string | undefined) => {
-        switch (status) {
-            case "done":
-                return "green";
-            case "new":
-                return "orange";
-            case "cancelled":
-                return "red";
+    const unitOfMeasureOptions = [
+        {value: "PCE", label: "Piece", color: "orange"},
+        {value: "KGM", label: "Kilogram", color: "cyan"},
+        {value: "GRM", label: "gram", color: "green"},
+        {value: "LTR", label: "Litre", color: "red"},
+    ];
+    const defaultMeasureOfUnit = "PCE";
+    const [selectedMeasureOfUnit, setSelectedMeasureOfUnit] = useState(defaultMeasureOfUnit);
+
+    const handleMeasureOfUnitChange = (value: React.SetStateAction<string>) => {
+        let measureOfUnit = "";
+
+        switch (value) {
+            case "PCE":
+                measureOfUnit = "PCE";
+                break;
+            case "KGM":
+                measureOfUnit = "KGM";
+                break;
+            case "GRM":
+                measureOfUnit = "GRM";
+                break;
+            case "LTR":
+                measureOfUnit = "LTR";
+                break;
             default:
-                return "default";
+                measureOfUnit = "PCE";
         }
+        setSelectedMeasureOfUnit(measureOfUnit);
     };
 
+
+    const itemOrServiceOptions = [
+        {value: false, label: "Iterm/Product", color: "red"},
+        {value: true, label: "Service", color: "cyan"},
+    ];
+    const [selectedItemOrService, setSelectedItemOrService] = useState(false);
+
+    const handleItemOrServiceChange = (value: React.SetStateAction<boolean>) => {
+        let itemOrService = false;
+
+        switch (value) {
+            case false:
+                itemOrService = false;
+                break;
+            case true:
+                itemOrService = true;
+                break;
+            default:
+                itemOrService = false;
+        }
+        setSelectedItemOrService(itemOrService);
+    };
+    const defaultCurrencySymbol = "SAR";
     const userData = localStorage.getItem("user");
     let userId = "";
     if (userData) {
@@ -61,9 +82,9 @@ export const InventoryItemsPageEdit = () => {
     }
 
     return (
-        <Show
-            title="InventoryItems"
-            headerButtons={() => false}
+        <Edit
+            title="Edit Invoice"
+            saveButtonProps={{...saveButtonProps}}
             contentProps={{
                 styles: {
                     body: {
@@ -72,7 +93,6 @@ export const InventoryItemsPageEdit = () => {
                 },
                 style: {
                     background: "transparent",
-                    boxShadow: "none",
                 },
             }}
         >
@@ -80,7 +100,8 @@ export const InventoryItemsPageEdit = () => {
                 {...formProps}
                 initialValues={{
                     ...queryResult?.data?.data,
-                    status: status,
+                    unit: inventoryItem?.unit,
+                    item_type: inventoryItem?.is_service,
                 }}
                 onFinish={async (values) => {
                     return formProps.onFinish?.({
@@ -90,102 +111,173 @@ export const InventoryItemsPageEdit = () => {
                 }}
                 layout="vertical"
             >
-                <Row>
-                    <Col span={24}>
-                        <Flex gap={16}>
-                            <FormItemEditableText
-                                loading={isLoading}
-                                formItemProps={{
-                                    name: "inventoryItem_name",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                        </Flex>
-                    </Col>
-                </Row>
-                <Row
-                    gutter={32}
-                    style={{
-                        marginTop: "32px",
-                    }}
+
+                <Card
+                    bordered={false}
+                    title={
+                        <Typography.Text style={{fontWeight: 400}}>
+                            {isLoading ? (
+                                <Skeleton.Button style={{width: 100, height: 22}}/>
+                            ) : (
+                                `Item Code: ${inventoryItem?.item_code}`
+                            )}
+                        </Typography.Text>
+                    }
                 >
-                    <Col xs={{span: 24}} xl={{span: 8}}>
-                        <Card
-                            bordered={false}
-                            styles={{body: {padding: 0}}}
-                            title={
-                                <Flex gap={12} align="center">
-                                    <BankOutlined/>
-                                    <Typography.Text>InventoryItem info</Typography.Text>
-                                </Flex>
-                            }
-                        >
+                    <Row gutter={16}>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="item_name"
+                                label="Item/Service Name"
+                                rules={[{required: true}]}
+                            >
+                                <Input placeholder="Please enter Item or Service name"/>
+                            </Form.Item>
+                        </Col>
 
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<PhoneOutlined/>}
-                                placeholder="Add phone number"
-                                formItemProps={{
-                                    name: "phone",
-                                    label: "Phone",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableInputDateTime
-                                loading={isLoading}
-                                icon={<FieldTimeOutlined/>}
-                                placeholder="Add date time"
-                                formItemProps={{
-                                    name: "date",
-                                    label: "date",
-                                    rules: [{required: true}],
-                                }}
-                            />
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableSelectStatic
-                                loading={isLoading}
-                                icon={<BankOutlined />}
-                                editIcon={<ExportOutlined />}
-                                placeholder="Select status"
-                                options={[
-                                    { label: "New", value: "new" },
-                                    { label: "Done", value: "done" },
-                                    { label: "Cancelled", value: "cancelled" },
-                                ]}
-                                formItemProps={{
-                                    name: "status",
-                                    label: "Status",
-                                    rules: [{ required: true }],
-                                }}
-                            />
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="category"
+                                label="Category"
+                                rules={[{required: true}]}
+                            >
+                                <Input placeholder="Please enter Category"/>
+                            </Form.Item>
+                        </Col>
 
-                            <Divider style={{margin: 0}}/>
-                            <FormItemEditableInputText
-                                loading={isLoading}
-                                icon={<EnvironmentOutlined/>}
-                                placeholder="Add agenda"
-                                formItemProps={{
-                                    name: "agenda",
-                                    label: "agenda",
-                                    rules: [{required: false}],
-                                }}
-                            />
-                        </Card>
-                        <DeleteButton
-                            type="text"
-                            style={{
-                                marginTop: "16px",
-                            }}
-                            onSuccess={() => {
-                                window.location.href = listUrl("inventoryItems");
-                            }}
-                        >
-                            Delete inventoryItem
-                        </DeleteButton>
-                    </Col>
-                </Row>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="unit"
+                                label="Unit"
+                                rules={[{required: false}]}
+                            >
+                                <Select
+                                    options={unitOfMeasureOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: (
+                                            <Tag color={opt.color} style={{marginRight: 0}}>
+                                                {opt.label}
+                                            </Tag>
+                                        ),
+                                    }))}
+                                    onChange={handleMeasureOfUnitChange}
+                                    defaultValue={defaultMeasureOfUnit}
+                                    placeholder="Please Select Measure of unit"/>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="is_service"
+                                label="Item Type"
+                                rules={[{required: true}]}
+                            >
+                                <Select
+                                    options={itemOrServiceOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: (
+                                            <Tag color={opt.color} style={{marginRight: 0}}>
+                                                {opt.label}
+                                            </Tag>
+                                        ),
+                                    }))}
+                                    onChange={handleItemOrServiceChange}
+                                    defaultValue={false}
+                                    placeholder="Please Select if its an item or service"/>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={16}>
+                        <Col xs={24}>
+                            <Form.Item
+                                label="Description"
+                                name="description"
+                                rules={[{required: false}]}
+
+                            >
+                                <Input.TextArea
+                                    placeholder="Enter Description here here"
+                                    autoSize={{minRows: 2, maxRows: 6}}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+
+                    <Row gutter={16}>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="cost_price"
+                                label="Cost Price/ Purchase Price"
+                                rules={[{required: false}]}
+                            >
+                                <InputNumber
+                                    addonBefore={defaultCurrencySymbol}
+                                    precision={2}
+                                    style={{width: "100%"}}
+                                    placeholder="Please Cost Price "/>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="selling_price"
+                                label="Selling Price"
+                                rules={[{required: false}]}
+                            >
+                                <InputNumber
+                                    addonBefore={defaultCurrencySymbol}
+                                    precision={2}
+                                    style={{width: "100%"}}
+                                    placeholder="Please Selling Price"/>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="tax_rate"
+                                label="Tax Rate in %"
+                                rules={[{required: false}]}
+                            >
+                                <InputNumber
+                                    addonBefore="%"
+                                    precision={2}
+                                    style={{width: "100%"}}
+                                    placeholder="Enter tax rate on selling price"/>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Form.Item
+                                name="discount_rate"
+                                label="Discount Rate in %"
+                                rules={[{required: false}]}
+                            >
+                                <InputNumber
+                                    addonBefore="%"
+                                    precision={2}
+                                    style={{width: "100%"}}
+                                    placeholder="Enter discount rate on selling price"/>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+
+                    <Row gutter={16}>
+                        <Col xs={24} sm={7}>
+                            <Form.Item
+                                name="current_stock"
+                                label="Number of units in stock or inventory"
+                                rules={[{required: false}]}
+                            >
+                                <InputNumber
+                                    precision={2}
+                                    addonBefore={"Nos"}
+                                    min={0}
+                                    style={{width: "100%"}}
+                                    placeholder="Please enter  units in stock"/>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Card>
             </Form>
-        </Show>
+        </Edit>
     );
 };
