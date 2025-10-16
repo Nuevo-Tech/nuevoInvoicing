@@ -101,6 +101,7 @@ export type Service = {
     totalPrice: number;
 };
 export type InventoryItem = {
+    _id: string;
     id: string;
     item_code: string;
     item_name: string;
